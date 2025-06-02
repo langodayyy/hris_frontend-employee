@@ -343,7 +343,7 @@ export function DataTable<TData, TValue>({
                 </svg>
               }
               onClick={() =>
-                (window.location.href = "/checkclock/management/add")
+                (window.location.href = "/checkclock/add")
               }
             >
               Add
