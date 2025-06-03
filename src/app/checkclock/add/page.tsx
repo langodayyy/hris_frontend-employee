@@ -74,6 +74,7 @@ export default function AddCheckclockPage() {
     lng: number;
   } | null>(null);
 
+
   const handlePinReady = (lat: number, lng: number) => {
     setPinLocation({ lat, lng });
     console.log("Posisi pin:", lat, lng);
@@ -293,8 +294,12 @@ export default function AddCheckclockPage() {
                 {(valueAttendanceType !== "anualLeave" && valueAttendanceType !== "sickLeave") && (
 
                 <div className="w-full min-h-[400px] flex flex-col gap-2">
-                  <MapBoxMap onPinReady={handlePinReady} />
+                  <MapBoxMap onPinReady={(lat,lng) => {
+                    console.log("Pin ready with lat:", lat, "lng:", lng);
+                    handlePinReady(lat, lng);
+                  }} />
                   {pinLocation && (
+                    console.log("latitude:", pinLocation.lat, "longitude:", pinLocation.lng),
                     <div className="flex gap-4 w-full">
                       <div className="flex flex-col gap-2 w-full">
                         <Label>Latitude</Label>

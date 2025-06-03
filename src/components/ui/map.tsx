@@ -35,27 +35,6 @@ export default function MapboxMap({ onPinReady }: MapboxMapProps) {
     setTimeout(() => map.resize(), 300);
 
     map.on("load", () => {
-      // Tambahkan lingkaran radius menggunakan turf
-      const circle = turf.circle([designatedLng, designatedLat], 10, {
-        steps: 64,
-        units: "meters",
-      });
-
-      map.addSource("radius-circle", {
-        type: "geojson",
-        data: circle,
-      });
-
-      map.addLayer({
-        id: "radius-circle-fill",
-        type: "fill",
-        source: "radius-circle",
-        paint: {
-          "fill-color": "#FF0000", // Warna merah
-          "fill-opacity": 0.1,
-        },
-      });
-
       map.loadImage("../images/map-pin.png", (error, image) => {
         if (error || !image) {
           console.error("Gagal memuat ikon pin:", error);
@@ -66,36 +45,73 @@ export default function MapboxMap({ onPinReady }: MapboxMapProps) {
           map.addImage("pin", image);
         }
 
-        map.addSource("pin-point", {
-          type: "geojson",
-          data: {
-            type: "FeatureCollection",
-            features: [
-              {
-                type: "Feature",
-                properties: {},
-                geometry: {
-                  type: "Point",
-                  coordinates: [designatedLng, designatedLat],
-                },
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition((pos) => {
+            const { latitude, longitude } = pos.coords;
+
+            // Hapus circle lama jika ada
+            if (map.getLayer("radius-circle-fill"))
+              map.removeLayer("radius-circle-fill");
+            if (map.getSource("radius-circle"))
+              map.removeSource("radius-circle");
+
+            // Tambahkan lingkaran radius di lokasi user
+            const userCircle = turf.circle([longitude, latitude], 20, {
+              steps: 64,
+              units: "meters",
+            });
+            map.addSource("radius-circle", {
+              type: "geojson",
+              data: userCircle,
+            });
+            map.addLayer({
+              id: "radius-circle-fill",
+              type: "fill",
+              source: "radius-circle",
+              paint: {
+                "fill-color": "#FF0000",
+                "fill-opacity": 0.1,
               },
-            ],
-          },
-        });
+            });
 
-        map.addLayer({
-          id: "pin-layer",
-          type: "symbol",
-          source: "pin-point",
-          layout: {
-            "icon-image": "pin",
-            "icon-size": 0.2,
-            "icon-anchor": "bottom",
-          },
-        });
+            // Add source with actual location
+            map.addSource("pin-point", {
+              type: "geojson",
+              data: {
+                type: "FeatureCollection",
+                features: [
+                  {
+                    type: "Feature",
+                    properties: {},
+                    geometry: {
+                      type: "Point",
+                      coordinates: [longitude, latitude],
+                    },
+                  },
+                ],
+              },
+            });
 
-        // 🔥 Kirim ke halaman pemanggil
-        onPinReady(designatedLat, designatedLng);
+            map.addLayer({
+              id: "pin-layer",
+              type: "symbol",
+              source: "pin-point",
+              layout: {
+                "icon-image": "pin",
+                "icon-size": 0.2,
+                "icon-anchor": "bottom",
+              },
+            });
+
+            // Optionally fly to actual location
+            map.flyTo({ center: [longitude, latitude], zoom: 17 });
+
+            // Kirim data lat long ke parent jika ada callback
+            if (typeof onPinReady === "function") {
+              onPinReady(latitude, longitude);
+            }
+          });
+        }
       });
     });
 
