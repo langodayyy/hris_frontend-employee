@@ -75,9 +75,10 @@ export function DataTable<TData, TValue>({
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
+  
   const [filters, setFilters] = useState({
     status: [] as string[],
-    approvalStatus: [] as string[],
+    overtimeType: [] as string[],
   });
   const applyClickedRef = useRef(false);
   const [tempFilters, setTempFilters] = useState(filters);
@@ -115,14 +116,15 @@ export function DataTable<TData, TValue>({
     setRowsPerPage(Number(value));
     setCurrentPage(1); // reset ke halaman 1
   };
+  
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
 
-  const totalPages = Math.ceil(data.length / rowsPerPage);
+  const totalPages = Math.ceil(table.getFilteredRowModel().rows.length / rowsPerPage);
   const startIndex = (currentPage - 1) * rowsPerPage;
-  const endIndex = startIndex + rowsPerPage;
+  
   
 
   const maxVisiblePages = 5;
@@ -139,7 +141,7 @@ export function DataTable<TData, TValue>({
   return (
     <>
       <div className="flex items-center gap-6 w-full justify-between">
-        <span className="w-[187px] text-lg flex-none">Checkclock Overview</span>
+        <span className="min-w-[187px] text-lg flex-none">Overtime Payment Submission</span>
         <div className="flex items-center py-4 gap-6">
           <div className="w-fit">
             <Popover>
@@ -209,21 +211,21 @@ export function DataTable<TData, TValue>({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-64">
-                <DropdownMenuLabel>Status</DropdownMenuLabel>
-                {["On Time", "Late", "Anual Leave", "Sick Leave", "Absent"].map(
+                <DropdownMenuLabel>Overtime Type</DropdownMenuLabel>
+                {["Weekend", "Weekdays","Holiday"].map(
                   (status) => (
                     <DropdownMenuCheckboxItem
                       key={status}
-                      checked={tempFilters.status.includes(status)}
+                      checked={tempFilters.overtimeType.includes(status)}
                       onSelect={(e) => e.preventDefault()}
                       onCheckedChange={() => {
                         setTempFilters((prev) => {
-                          const exists = prev.status.includes(status);
+                          const exists = prev.overtimeType.includes(status);
                           return {
                             ...prev,
-                            status: exists
-                              ? prev.status.filter((item) => item !== status)
-                              : [...prev.status, status],
+                            overtimeType: exists
+                              ? prev.overtimeType.filter((item) => item !== status)
+                              : [...prev.overtimeType, status],
                           };
                         });
                       }}
@@ -238,18 +240,18 @@ export function DataTable<TData, TValue>({
                 {["Approved", "Pending", "Rejected"].map((status) => (
                   <DropdownMenuCheckboxItem
                     key={status}
-                    checked={tempFilters.approvalStatus.includes(status)}
+                    checked={tempFilters.status.includes(status)}
                     onSelect={(e) => e.preventDefault()}
                     onCheckedChange={() => {
                       setTempFilters((prev) => {
-                        const exists = prev.approvalStatus.includes(status);
+                        const exists = prev.status.includes(status);
                         return {
                           ...prev,
-                          approvalStatus: exists
-                            ? prev.approvalStatus.filter(
+                          status: exists
+                            ? prev.status.filter(
                                 (item) => item !== status
                               )
-                            : [...prev.approvalStatus, status],
+                            : [...prev.status, status],
                         };
                       });
                     }}
@@ -284,8 +286,8 @@ export function DataTable<TData, TValue>({
                     className="w-full"
                     onClick={() => {
                       setTempFilters({
-                        approvalStatus: [],
                         status: [],
+                        overtimeType: [],
                       });
                       table.setColumnFilters([]); // Clear all filters in the table
                     }}
@@ -380,22 +382,29 @@ export function DataTable<TData, TValue>({
       </div>
       <div className="w-full flex justify-between mt-[10px]">
         {/* Select Rows */}
-        <div className="flex items-center gap-[10px]">
-          <p className="text-base font-medium">Showing</p>
-          <Select
-            onValueChange={handleRowsChange}
-            defaultValue={rowsPerPage.toString()}
-          >
-            <SelectTrigger className="w-[72px]">
-              <SelectValue placeholder="" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="10">10</SelectItem>
-              <SelectItem value="25">25</SelectItem>
-              <SelectItem value="50">50</SelectItem>
-              <SelectItem value="100">100</SelectItem>
-            </SelectContent>
-          </Select>
+        <div className="flex items-center gap-[10px] ">
+            <p className="text-base font-medium">Showing</p>
+            <Select
+                onValueChange={handleRowsChange}
+                defaultValue={rowsPerPage.toString()}
+                >
+                <SelectTrigger className="min-w-[72px]">
+                    <SelectValue placeholder="" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="10">10</SelectItem>
+                    {table.getFilteredRowModel().rows.length > 10 && (
+                    <SelectItem value="25">25</SelectItem>
+                    )}
+                    {table.getFilteredRowModel().rows.length > 25 && (
+                    <SelectItem value="50">50</SelectItem>
+                    )}
+                    {table.getFilteredRowModel().rows.length > 50 && (
+                    <SelectItem value="100">100</SelectItem>
+                    )}
+                </SelectContent>
+            </Select>
+
         </div>
 
         {/* Pagination */}
