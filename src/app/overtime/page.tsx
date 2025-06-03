@@ -12,27 +12,23 @@ export default function OvertimeOverviewPage() {
   useEffect(() => {
     async function fetchData() {
       const overtimeTypes = ["Weekday", "Weekend", "Holiday"];
-      const approvalStatus = ["Approved", "Pending", "Rejected"];
+  const approvalStatus = ["Approved", "Pending", "Rejected"];
 
-      const dynamicData = Array.from({ length: 50 }, (_, i) => {
-        const overtimeType =
-          overtimeTypes[Math.floor(Math.random() * overtimeTypes.length)];
-        const date = `2023-10-${String(
-          Math.floor(Math.random() * 30) + 1
-        ).padStart(2, "0")}`;
-        const totalHours = Math.floor(Math.random() * 5) + 1;
-        const overtimePayroll = totalHours * 50000;
-        const status =
-          approvalStatus[Math.floor(Math.random() * approvalStatus.length)];
+  const dynamicData = Array.from({ length: 50 }, (_, i) => {
+    const overtimeName = overtimeTypes[Math.floor(Math.random() * overtimeTypes.length)];
+    const date = `2023-10-${String(Math.floor(Math.random() * 30) + 1).padStart(2, "0")}`;
+    const totalHours = Math.floor(Math.random() * 5) + 1;
+    const overtimePayroll = totalHours * 50000;
+    const status = approvalStatus[Math.floor(Math.random() * approvalStatus.length)];
 
-        return {
-          id: i + 1,
-          overtimeType,
-          date,
-          totalHours: totalHours.toString(),
-          overtimePayroll: overtimePayroll.toString(),
-          status,
-        };
+    return {
+      id: i + 1,
+      overtimeName,
+      date,
+      totalHours: totalHours.toString(),      
+      overtimePayroll: overtimePayroll.toString(), 
+      status                                  
+    };
       });
       setData(dynamicData);
     }

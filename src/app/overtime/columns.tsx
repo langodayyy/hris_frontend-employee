@@ -13,11 +13,11 @@ import RejectionReasonDialog from "@/components/ui/reject-reason-dialog";
 // You can use a Zod schema here if you want.
 export type OvertimeOverview = {
   id: number;
-  overtimeType?: string;
+  overtimeName?: string;
   date?: string | { startDate: string; endDate: string };
   totalHours?: string;
   overtimePayroll?: string;
-  status: string;
+status: string;
 };
 
 export const columns: ColumnDef<OvertimeOverview>[] = [
@@ -28,12 +28,12 @@ export const columns: ColumnDef<OvertimeOverview>[] = [
     size: 50,
   },
   {
-    accessorKey: "overtimeType",
+    accessorKey: "overtimeName",
     header: ({ column }) => {
-      return <div className="text-center">Overtime Type</div>;
+      return <div className="text-center">Overtime Name</div>;
     },
     cell: ({ row }) => (
-      <div className="text-center">{row.getValue("overtimeType")}</div>
+      <div className="text-center">{row.getValue("overtimeName")}</div>
     ),
     filterFn: (row, columnId, filterValue) => {
       return filterValue.includes(row.getValue(columnId));

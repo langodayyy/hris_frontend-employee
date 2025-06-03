@@ -2,12 +2,7 @@
 import Sidebar from "@/components/sidebar";
 import { Card, CardContent } from "@/components/ui/card";
 import * as React from "react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { DateRange } from "react-day-picker";
 import AttendanceForm from "@/components/custom/attendance-form";
-
-
 
 export default function AddCheckclockPage() {
   const [valueEmployee, setValueEmployee] = React.useState("");
@@ -29,7 +24,7 @@ export default function AddCheckclockPage() {
               {valueEmployee === "" ? "Add Clock In" : "Add Clock Out"}
             </h1>
           </div>
-          <AttendanceForm/>
+          <AttendanceForm />
         </CardContent>
       </Card>
     </Sidebar>

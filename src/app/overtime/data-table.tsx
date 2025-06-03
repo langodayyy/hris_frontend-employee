@@ -78,7 +78,7 @@ export function DataTable<TData, TValue>({
   
   const [filters, setFilters] = useState({
     status: [] as string[],
-    overtimeType: [] as string[],
+    overtimeName: [] as string[],
   });
   const applyClickedRef = useRef(false);
   const [tempFilters, setTempFilters] = useState(filters);
@@ -211,21 +211,21 @@ export function DataTable<TData, TValue>({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-64">
-                <DropdownMenuLabel>Overtime Type</DropdownMenuLabel>
-                {["Weekend", "Weekdays","Holiday"].map(
+                <DropdownMenuLabel>Overtime Name</DropdownMenuLabel>
+                {["Weekend", "Weekday","Holiday"].map(
                   (status) => (
                     <DropdownMenuCheckboxItem
                       key={status}
-                      checked={tempFilters.overtimeType.includes(status)}
+                      checked={tempFilters.overtimeName.includes(status)}
                       onSelect={(e) => e.preventDefault()}
                       onCheckedChange={() => {
                         setTempFilters((prev) => {
-                          const exists = prev.overtimeType.includes(status);
+                          const exists = prev.overtimeName.includes(status);
                           return {
                             ...prev,
-                            overtimeType: exists
-                              ? prev.overtimeType.filter((item) => item !== status)
-                              : [...prev.overtimeType, status],
+                            overtimeName: exists
+                              ? prev.overtimeName.filter((item) => item !== status)
+                              : [...prev.overtimeName, status],
                           };
                         });
                       }}
@@ -287,7 +287,7 @@ export function DataTable<TData, TValue>({
                     onClick={() => {
                       setTempFilters({
                         status: [],
-                        overtimeType: [],
+                        overtimeName: [],
                       });
                       table.setColumnFilters([]); // Clear all filters in the table
                     }}
@@ -325,7 +325,7 @@ export function DataTable<TData, TValue>({
                 </svg>
               }
               onClick={() =>
-                (window.location.href = "/checkclock/add")
+                (window.location.href = "/overtime/add")
               }
             >
               Add
