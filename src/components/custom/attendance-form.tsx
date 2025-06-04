@@ -40,12 +40,12 @@ const workTypeOptions = [
 
 const formSchema = z
   .object({
-    workType: z.string().min(1, "Work Type is required"),
-    attendanceType: z.string().min(1, "Attendance Type is required"),
-    date: z.string(),
+    workType: z.string({required_error: "Please select your work type."}).min(1, "Work Type is required"),
+    attendanceType: z.string({required_error:"Please choose your attendance type."}).min(1, "Attendance Type is required."),
+    date: z.string({required_error: "Please select a valid date range."}),
     latitude: z.string().optional(),
     longitude: z.string().optional(),
-    supportingEvidence: z.string(),
+    supportingEvidence: z.string({required_error: "Please upload supporting evidence."}),
   })
   .superRefine((data, ctx) => {
     const needsEvidence =
@@ -61,7 +61,7 @@ const formSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["date"],
-        message: "Date is required for annual or sick leave",
+        // message: "Date is required for annual or sick leave",
       });
     }
 
@@ -72,7 +72,7 @@ const formSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["supportingEvidence"],
-        message: "Supporting evidence is required for WFA or leave types",
+        // message: "Supporting evidence is required for WFA or leave types",
       });
     }
   });
@@ -165,7 +165,7 @@ const AttendanceForm: React.FC = () => {
           ) : (
             <Input className="w-full bg-gray-100 cursor-not-allowed" value="WFO" readOnly />
           )}
-          {errors.workType && <span className="text-red-500 text-sm font-semibold">Please select your work type</span>}
+          {errors.workType && <span className="text-red-500 text-sm font-semibold">{errors.workType?.message}</span>}
         </div>
 
         <div className="flex flex-col gap-2" ref={fieldRefs.attendanceType}>
@@ -190,7 +190,7 @@ const AttendanceForm: React.FC = () => {
           ) : (
             <Input className="w-full bg-gray-100 cursor-not-allowed" value="Clock Out" readOnly />
           )}
-          {errors.attendanceType && <span className="text-red-500 text-sm font-semibold">Please choose your attendance type.</span>}
+          {errors.attendanceType && <span className="text-red-500 text-sm font-semibold">{errors.attendanceType.message}</span>}
         </div>
 
         {(valueAttendanceType === "anualLeave" || valueAttendanceType === "sickLeave") && (
@@ -211,7 +211,7 @@ const AttendanceForm: React.FC = () => {
                 <Calendar mode="range" selected={date} onSelect={setDate} numberOfMonths={1} />
               </PopoverContent>
             </Popover>
-            {errors.date && <span className="text-red-500 text-sm font-semibold">Please select a valid date range.</span>}
+            {errors.date && <span className="text-red-500 text-sm font-semibold">{errors.date.message}</span>}
           </div>
         )}
 
@@ -228,7 +228,7 @@ const AttendanceForm: React.FC = () => {
               accept={{ "image/png": [], "image/jpeg": [], "image/jpg": [] }}
               type="Only support .png, .jpg, .jpeg"
             />
-            {errors.supportingEvidence && <span className="text-red-500 text-sm font-semibold">Please upload supporting evidence.</span>}
+            {errors.supportingEvidence && <span className="text-red-500 text-sm font-semibold">{errors.supportingEvidence.message}</span>}
           </div>
         )}
 

@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { FileUploader } from "@/components/ui/fileUploader";
 import { useRouter } from "next/navigation";
+import OvertimeForm from "@/components/custom/overtime-form";
 
 export default function AddOvertimePaymentPage() {
   const [valueEmployee, setValueEmployee] = React.useState("");
@@ -49,75 +50,7 @@ export default function AddOvertimePaymentPage() {
               Add Overtime Payment Submisson
             </h1>
           </div>
-          <form action="">
-            <Card className="w-full p-5 gap-6 flex flex-col">
-              <div className="flex gap-6">
-                <div className="flex flex-col gap-2 w-full">
-                  <Label>Overtime Date</Label>
-                  <div className="w-full">
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant={"calendar"}
-                          className={cn(
-                            "w-full justify-start text-left font-normal py-3",
-                            !date && "text-neutral-300"
-                          )}
-                        >
-                          <CalendarIcon />
-                          {date ? format(date, "PPP") : <span>dd/mm/yyyy</span>}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="">
-                        <Calendar
-                          mode="single"
-                          selected={date}
-                          onSelect={setDate}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                </div>
-                <div className="flex flex-col gap-2 w-full">
-                  <Label>Total Hours</Label>
-                  <Input
-                    type="number"
-                    className="no-spinner"
-                    placeholder="Enter overtime duration"
-                  ></Input>
-                </div>
-              </div>
-              <div className="flex flex-col gap-2">
-                <Label>Upload Supporting Evidence</Label>
-                <FileUploader
-                  onDrop={(files) => {
-                    const file = files[0];
-                    if (file) {
-                    }
-                  }}
-                  accept={{
-                    "image/png": [],
-                    "image/jpeg": [],
-                    "image/jpg": [],
-                  }}
-                  type="Only support .png, .jpg, .jpeg"
-                />
-              </div>
-            </Card>
-            <div className="flex w-full gap-[15px] justify-end mt-6">
-              <div className="w-[93px]">
-                <Button variant="outline" onClick={() => router.back()}>
-                  Cancel
-                </Button>
-              </div>
-              <div className="w-[93px]">
-                <Button type="submit" onClick={handleSave}>
-                  Submit
-                </Button>
-              </div>
-            </div>
-          </form>
+         <OvertimeForm></OvertimeForm>
         </CardContent>
       </Card>
     </Sidebar>
