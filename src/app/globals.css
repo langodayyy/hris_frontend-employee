@@ -181,6 +181,14 @@
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
+  --chart-6: oklch(0.7312 0.1377 148.95);
+  --present: oklch(0.7312 0.1377 148.95);
+  --annualLeave: oklch(0.8587 0.1878 83.14);
+  --sickLeave: oklch(0.6275 0.2571 29.58);
+  --absent: oklch(0.3291 0.1115 264.44);
+
+
+
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
