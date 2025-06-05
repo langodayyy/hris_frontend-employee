@@ -3,6 +3,8 @@ import Sidebar from "@/components/sidebar";
 import { Button } from "@/components/ui/button";
 import { Label as UILabel } from "@/components/ui/label";
 import { useState, useEffect } from "react";
+import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
+
 import {
   Popover,
   PopoverContent,
@@ -36,6 +38,8 @@ import {
 } from "@/components/ui/chart";
 import { TrendingUp } from "lucide-react";
 import AttendancePieChart from "@/components/custom/attendance-pie-chart";
+import { TotalQuotaCard } from "@/components/ui/total-quota-card";
+import ExpectedSalaryCard from "@/components/custom/expected-salary-card";
 
 const workHours = [
   // June 2025
@@ -195,7 +199,7 @@ const attendanceData = [
   { status: "Absent", total: 173, fill: "var(--absent)" },
 ];
 
-const chartConfig = {
+const attendance = {
   total: {
     label: "total",
   },
@@ -216,6 +220,68 @@ const chartConfig = {
     color: "hsl(var(--absent))",
   },
 } satisfies ChartConfig;
+
+// Ubah struktur salary agar pakai date (YYYY-MM format)
+const salary = [
+  { date: "2022-01", salary: 11000000, payroll: 12000000 },
+  { date: "2022-02", salary: 12000000, payroll: 13000000 },
+  { date: "2022-03", salary: 11200000, payroll: 12200000 },
+  { date: "2022-04", salary: 15000000, payroll: 16000000 },
+  { date: "2022-05", salary: 10890000, payroll: 11890000 },
+  { date: "2022-06", salary: 11500000, payroll: 12500000 },
+  { date: "2022-07", salary: 13000000, payroll: 14000000 },
+  { date: "2022-08", salary: 12500000, payroll: 13500000 },
+  { date: "2022-09", salary: 13500000, payroll: 14500000 },
+  { date: "2022-10", salary: 14000000, payroll: 15000000 },
+  { date: "2022-11", salary: 14500000, payroll: 15500000 },
+  { date: "2022-12", salary: 15000000, payroll: 16000000 },
+  { date: "2023-01", salary: 11100000, payroll: 12100000 },
+  { date: "2023-02", salary: 12100000, payroll: 13100000 },
+  { date: "2023-03", salary: 11300000, payroll: 12300000 },
+  { date: "2023-04", salary: 15100000, payroll: 16100000 },
+  { date: "2023-05", salary: 10990000, payroll: 11990000 },
+  { date: "2023-06", salary: 11600000, payroll: 12600000 },
+  { date: "2023-07", salary: 13100000, payroll: 14100000 },
+  { date: "2023-08", salary: 12600000, payroll: 13600000 },
+  { date: "2023-09", salary: 13600000, payroll: 14600000 },
+  { date: "2023-10", salary: 14100000, payroll: 15100000 },
+  { date: "2023-11", salary: 14600000, payroll: 15600000 },
+  { date: "2023-12", salary: 15100000, payroll: 16100000 },
+  { date: "2025-01", salary: 10000000, payroll: 3000000 },
+  { date: "2025-02", salary: 10000000, payroll: 2000000 },
+  { date: "2025-03", salary: 10000000, payroll: 1000000 },
+  { date: "2025-04", salary: 10000000, payroll: 500000 },
+  { date: "2025-05", salary: 10000000, payroll: 290000 },
+  { date: "2025-06", salary: 10000000, payroll: 900000 },
+  // { date: "2025-07", salary: 13200000, payroll: 14200000 },
+  // { date: "2025-08", salary: 12700000, payroll: 13700000 },
+  // { date: "2025-09", salary: 13700000, payroll: 14700000 },
+  // { date: "2025-10", salary: 14200000, payroll: 15200000 },
+  // { date: "2025-11", salary: 14700000, payroll: 15700000 },
+  // { date: "2025-12", salary: 15200000, payroll: 16200000 },
+];
+
+// Ubah enrichedSalary agar pakai date
+const enrichedSalary = salary.map((item) => ({
+  ...item,
+  totalSalary: item.salary + item.payroll,
+}));
+console.log(enrichedSalary);
+
+const chartConfig = {
+  salary: {
+    label: "Salary",
+    color: "#2d8eff",
+  },
+  payroll: {
+    label: "Payroll",
+    color: "#ffcd1b",
+  },
+  totalSalary: {
+    label: "Total Salary ",
+    color: "#3aad61",
+  },
+};
 
 const now = new Date();
 const monthNames = [
@@ -387,7 +453,7 @@ export default function DashboardPage() {
               </svg>
             }
             title="Total Work Hours"
-            value="222 h"
+            value="222 Hours"
           ></DashboardCard>
           <DashboardCard
             icon={
@@ -408,7 +474,7 @@ export default function DashboardPage() {
               </svg>
             }
             title="On Time"
-            value="120"
+            value="120 Times"
           ></DashboardCard>
           <DashboardCard
             icon={
@@ -429,7 +495,7 @@ export default function DashboardPage() {
               </svg>
             }
             title="Late"
-            value="30"
+            value="30 Times"
           ></DashboardCard>
           <DashboardCard
             icon={
@@ -450,7 +516,7 @@ export default function DashboardPage() {
               </svg>
             }
             title="Absent"
-            value="5"
+            value="5 Times"
           ></DashboardCard>
         </div>
         <WorkHoursChart
@@ -458,11 +524,11 @@ export default function DashboardPage() {
           selectedMonth={selectedMonth}
           selectedYear={selectedYear}
         />
-        <div className="grid grid-cols-2">
+        <div className="grid grid-cols-2 gap-[30px]">
           <Card className="">
             <CardHeader className="items-center pb-0 gap-3">
               <div className="">
-                <CardTitle className="text-lg">Attendance Sumary</CardTitle>
+                <CardTitle className="text-lg">Attendance Summary</CardTitle>
                 <CardDescription>
                   {selectedMonth &&
                     selectedYear &&
@@ -478,12 +544,98 @@ export default function DashboardPage() {
               <AttendancePieChart
                 attendanceData={attendanceData}
                 Days={Days}
-                chartConfig={chartConfig}
+                chartConfig={attendance}
                 selectedMonth={selectedMonth}
                 selectedYear={selectedYear}
               />
             </div>
           </Card>
+          <Card className="px-6 gap-[10px] flex flex-col">
+            <CardHeader className="items-center pb-0 gap-3 px-0">
+              <div className="">
+                <CardTitle className="text-lg">Leave Summary</CardTitle>
+                <CardDescription>
+                  {selectedMonth && selectedYear && `${selectedYear}`}
+                </CardDescription>
+              </div>
+              <div className="border-b-2 border-neutral-900 w-full"></div>
+            </CardHeader>
+            <CardContent className="grid grid-cols-2 gap-[10px] p-0">
+              <TotalQuotaCard
+                title="Total Quota Annual Leave"
+                value="14 Days"
+                className="col-span-2"
+                color="bg-info-600"
+              ></TotalQuotaCard>
+              <TotalQuotaCard
+                title="Taken"
+                value="0 Days"
+                color="bg-warning-400"
+                showFooter
+                buttonText="See Details"
+                buttonHref="/checkclock"
+              ></TotalQuotaCard>
+              <TotalQuotaCard
+                title="Remaining"
+                value="14 Days"
+                color="bg-success-500"
+                showFooter
+                buttonText="Request Leave"
+                buttonHref="/checkclock/add"
+              ></TotalQuotaCard>
+            </CardContent>
+          </Card>
+          
+              {/* Expected Monthly Salary Card extracted to component */}
+              <ExpectedSalaryCard
+                salary={salary}
+                enrichedSalary={enrichedSalary}
+                selectedMonth={selectedMonth}
+                selectedYear={selectedYear}
+                monthNames={monthNames}
+                chartConfig={chartConfig}
+              />
+              <Card className="px-6 gap-[10px] flex flex-col">
+            <CardHeader className="items-center pb-0 gap-3 px-0">
+              <div className="">
+                <CardTitle className="text-lg">Overtime Summary</CardTitle>
+                <CardDescription>
+                   {selectedMonth &&
+                    selectedYear &&
+                    `${
+                      selectedMonth.charAt(0).toUpperCase() +
+                      selectedMonth.slice(1)
+                    } ${selectedYear}`}
+                </CardDescription>
+              </div>
+              <div className="border-b-2 border-neutral-900 w-full"></div>
+            </CardHeader>
+            <CardContent className="grid grid-cols-2 gap-[10px] p-0">
+              <TotalQuotaCard
+                title="Total Quota Overtime This Month"
+                value="20 Hours"
+                className="col-span-2"
+                color="bg-info-600"
+              ></TotalQuotaCard>
+              <TotalQuotaCard
+                title="Taken"
+                value="5 Hours"
+                color="bg-warning-400"
+                showFooter
+                buttonText="See Details"
+                buttonHref="/overtime"
+              ></TotalQuotaCard>
+              <TotalQuotaCard
+                title="Remaining"
+                value="15 Hours"
+                color="bg-success-500"
+                showFooter
+                buttonText="Request Leave"
+                buttonHref="/overtime/add"
+              ></TotalQuotaCard>
+            </CardContent>
+          </Card>
+          
         </div>
       </div>
     </Sidebar>
