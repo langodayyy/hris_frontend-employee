@@ -15,12 +15,19 @@ import * as React from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useFormContext } from "@/components/context/FormContext";
 
 const overtimeSchema = z.object({
-   date: z.string({required_error: "Please select a valid date."}),
+  date: z.string({ required_error: "Please select a valid date." }),
   totalHours: z.preprocess(
     (val) => {
-      if (val === "" || val === null || typeof val === "undefined" || Number.isNaN(val)) return undefined;
+      if (
+        val === "" ||
+        val === null ||
+        typeof val === "undefined" ||
+        Number.isNaN(val)
+      )
+        return undefined;
       const num = Number(val);
       return Number.isNaN(num) ? undefined : num;
     },
@@ -32,33 +39,46 @@ const overtimeSchema = z.object({
       .min(0, "Minimum 0 hour")
       .max(5, "Maximum 5 hours")
   ),
- supportingEvidence: z.string({required_error: "Please upload supporting evidence."}),
+  supportingEvidence: z.string({
+    required_error: "Please upload supporting evidence.",
+  }),
 });
-
 type OvertimeFormData = z.infer<typeof overtimeSchema>;
 
 const OvertimeForm: React.FC = () => {
   const router = useRouter();
+  const { setErrors, setSuccess } = useFormContext();
 
   const {
-  register,
-  handleSubmit,
-  setValue,
-  formState: { errors },
-} = useForm({
-  resolver: zodResolver(overtimeSchema),
-});
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(overtimeSchema),
+  });
 
   const [selectedDate, setSelectedDate] = React.useState<Date | undefined>();
 
+  const handleSave = () => {
+    console.log("Data berhasil disimpan!");
+    setSuccess({ overtime: ["Overtime submitted successfully!"] });
+    router.push("/overtime");
+  };
+
   const onSubmit = (data: OvertimeFormData) => {
     console.log("Form submitted successfully:", data);
+    setSuccess({ overtime: ["Overtime submitted successfully!"] });
+    // setSuccess({ attendance: ["Attendance submitted successfully!"] });
   };
 
-   const handleSave = () => {
-    console.log("Data berhasil disimpan!");
-  };
-
+  React.useEffect(() => {
+    if (selectedDate) {
+      setValue("date", format(selectedDate, "yyyy-MM-dd"), {
+        shouldValidate: true,
+      });
+    }
+  }, [selectedDate, setValue]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -88,6 +108,7 @@ const OvertimeForm: React.FC = () => {
                 <Calendar
                   mode="single"
                   selected={selectedDate}
+                  onSelect={setSelectedDate}
                   initialFocus
                 />
               </PopoverContent>
@@ -104,7 +125,7 @@ const OvertimeForm: React.FC = () => {
             <Label>Total Hours</Label>
             <Input
               type="number"
-              placeholder="Enter overtime duration"
+              placeholder="Enter overtime duration (max 5 hours in one day)"
               step="1"
               min="0"
               max="5"
@@ -162,7 +183,9 @@ const OvertimeForm: React.FC = () => {
           </Button>
         </div>
         <div className="w-[93px]">
-          <Button type="submit">Submit</Button>
+          <Button type="submit" onClick={handleSave}>
+            Submit
+          </Button>
         </div>
       </div>
     </form>
