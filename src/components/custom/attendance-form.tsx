@@ -311,26 +311,7 @@ const AttendanceForm: React.FC = () => {
           valueAttendanceType !== "sickLeave" && (
             <div className="w-full min-h-[400px] flex flex-col gap-2">
               <MapBoxMap onPinReady={handlePinReady} />
-              {pinLocation && (
-                <div className="flex gap-4 w-full">
-                  <div className="flex flex-col gap-2 w-full">
-                    <Label>Latitude</Label>
-                    <Input
-                      className="w-full"
-                      value={pinLocation.lat.toString()}
-                      readOnly
-                    />
-                  </div>
-                  <div className="flex flex-col gap-2 w-full">
-                    <Label>Latitude</Label>
-                    <Input
-                      className="w-full"
-                      value={pinLocation.lng.toString()}
-                      readOnly
-                    />
-                  </div>
-                </div>
-              )}
+            
             </div>
           )}
       </Card>
