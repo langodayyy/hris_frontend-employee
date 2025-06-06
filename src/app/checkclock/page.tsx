@@ -4,6 +4,8 @@ import Sidebar from "../../components/sidebar";
 import * as React from "react";
 import { CheckclockOverview, columns } from "./columns";
 import { DataTable } from "./data-table";
+import { useFormContext } from "@/components/context/FormContext";
+import { Toaster, toast } from "sonner";
 // import Cookies from "js-cookie";
 
 export default function CheckclockOverviewPage() {
@@ -151,9 +153,18 @@ export default function CheckclockOverviewPage() {
 
     fetchData();
   }, []);
+  const { success, setSuccess } = useFormContext();
+  useEffect(() => {
+    if (success && Object.keys(success).length > 0) {
+      toast.success(`${success.attendance}`);
+      console.log(success);
+      setSuccess({}); 
+    }
+  }, [success]); 
 
   return (
     <Sidebar title="Checkclock">
+       <Toaster position="bottom-right" expand={true} />
       <div className=" bg-white rounded-[15px] p-5 flex flex-col gap-[10px]">
         <div className="container mx-auto">
           <DataTable columns={columns} data={data} />

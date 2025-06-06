@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
+import { useFormContext } from "@/components/context/FormContext";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -24,7 +25,7 @@ import {
 } from "@radix-ui/react-popover";
 import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
+import { format, set } from "date-fns";
 import { FileUploader } from "../ui/fileUploader";
 
 const attendanceTypeOptions = [
@@ -40,12 +41,18 @@ const workTypeOptions = [
 
 const formSchema = z
   .object({
-    workType: z.string({required_error: "Please select your work type."}).min(1, "Work Type is required"),
-    attendanceType: z.string({required_error:"Please choose your attendance type."}).min(1, "Attendance Type is required."),
-    date: z.string({required_error: "Please select a valid date range."}),
+    workType: z
+      .string({ required_error: "Please select your work type." })
+      .min(1, "Work Type is required"),
+    attendanceType: z
+      .string({ required_error: "Please choose your attendance type." })
+      .min(1, "Attendance Type is required."),
+    date: z.string({ required_error: "Please select a valid date range." }),
     latitude: z.string().optional(),
     longitude: z.string().optional(),
-    supportingEvidence: z.string({required_error: "Please upload supporting evidence."}),
+    supportingEvidence: z.string({
+      required_error: "Please upload supporting evidence.",
+    }),
   })
   .superRefine((data, ctx) => {
     const needsEvidence =
@@ -95,7 +102,11 @@ const AttendanceForm: React.FC = () => {
   const [valueAttendanceType, setValueAttendanceType] = useState("");
   const [date, setDate] = useState<DateRange | undefined>(undefined);
   const router = useRouter();
-  const [pinLocation, setPinLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [pinLocation, setPinLocation] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
+  const { setErrors, setSuccess } = useFormContext();
 
   const fieldRefs = {
     workType: useRef<HTMLDivElement>(null),
@@ -107,23 +118,33 @@ const AttendanceForm: React.FC = () => {
   useEffect(() => {
     const firstErrorField = Object.keys(errors)[0] as keyof typeof fieldRefs;
     if (firstErrorField && fieldRefs[firstErrorField]?.current) {
-      fieldRefs[firstErrorField]?.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-      const inputEl = fieldRefs[firstErrorField]?.current?.querySelector("input, select, button") as HTMLElement;
+      fieldRefs[firstErrorField]?.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+      const inputEl = fieldRefs[firstErrorField]?.current?.querySelector(
+        "input, select, button"
+      ) as HTMLElement;
       if (inputEl) inputEl.focus();
     }
   }, [errors]);
 
   useEffect(() => {
-    if (valueEmployee !== "") setValue("workType", "wfo", { shouldValidate: true });
+    if (valueEmployee !== "")
+      setValue("workType", "wfo", { shouldValidate: true });
   }, [valueEmployee, setValue]);
 
   useEffect(() => {
-    if (valueEmployee !== "") setValue("attendanceType", "clockOut", { shouldValidate: true });
+    if (valueEmployee !== "")
+      setValue("attendanceType", "clockOut", { shouldValidate: true });
   }, [valueEmployee, setValue]);
 
   useEffect(() => {
     if (date?.from && date?.to) {
-      const formatted = `${format(date.from, "yyyy-MM-dd")} - ${format(date.to, "yyyy-MM-dd")}`;
+      const formatted = `${format(date.from, "yyyy-MM-dd")} - ${format(
+        date.to,
+        "yyyy-MM-dd"
+      )}`;
       setValue("date", formatted, { shouldValidate: true });
     }
   }, [date, setValue]);
@@ -134,10 +155,14 @@ const AttendanceForm: React.FC = () => {
 
   const handleSave = () => {
     console.log("Data berhasil disimpan!");
+    setSuccess({ attendance: ["Attendance submitted successfully!"] });
+    router.push("/checkclock");
   };
 
   const onSubmit = (data: FormValues) => {
     console.log("Form submitted successfully:", data);
+    setSuccess({ attendance: ["Attendance submitted successfully!"] });
+    // setSuccess({ attendance: ["Attendance submitted successfully!"] });
   };
 
   return (
@@ -158,14 +183,24 @@ const AttendanceForm: React.FC = () => {
               </SelectTrigger>
               <SelectContent>
                 {workTypeOptions.map((type) => (
-                  <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+                  <SelectItem key={type.value} value={type.value}>
+                    {type.label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           ) : (
-            <Input className="w-full bg-gray-100 cursor-not-allowed" value="WFO" readOnly />
+            <Input
+              className="w-full bg-gray-100 cursor-not-allowed"
+              value="WFO"
+              readOnly
+            />
           )}
-          {errors.workType && <span className="text-red-500 text-sm font-semibold">{errors.workType?.message}</span>}
+          {errors.workType && (
+            <span className="text-red-500 text-sm font-semibold">
+              {errors.workType?.message}
+            </span>
+          )}
         </div>
 
         <div className="flex flex-col gap-2" ref={fieldRefs.attendanceType}>
@@ -183,77 +218,107 @@ const AttendanceForm: React.FC = () => {
               </SelectTrigger>
               <SelectContent>
                 {attendanceTypeOptions.map((type) => (
-                  <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+                  <SelectItem key={type.value} value={type.value}>
+                    {type.label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           ) : (
-            <Input className="w-full bg-gray-100 cursor-not-allowed" value="Clock Out" readOnly />
+            <Input
+              className="w-full bg-gray-100 cursor-not-allowed"
+              value="Clock Out"
+              readOnly
+            />
           )}
-          {errors.attendanceType && <span className="text-red-500 text-sm font-semibold">{errors.attendanceType.message}</span>}
+          {errors.attendanceType && (
+            <span className="text-red-500 text-sm font-semibold">
+              {errors.attendanceType.message}
+            </span>
+          )}
         </div>
 
-        {(valueAttendanceType === "anualLeave" || valueAttendanceType === "sickLeave") && (
+        {(valueAttendanceType === "anualLeave" ||
+          valueAttendanceType === "sickLeave") && (
           <div className="flex flex-col gap-2" ref={fieldRefs.date}>
             <Label>Date</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
                   variant="calendar"
-                  className={cn("w-full justify-start text-left font-normal", !date && "text-muted-foreground")}
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !date && "text-muted-foreground"
+                  )}
                 >
                   {date?.from && date?.to
-                    ? `${format(date.from, "dd/MM/yyyy")} - ${format(date.to, "dd/MM/yyyy")}`
+                    ? `${format(date.from, "dd/MM/yyyy")} - ${format(
+                        date.to,
+                        "dd/MM/yyyy"
+                      )}`
                     : "Pick a date range"}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 bg-white z-50" align="start">
-                <Calendar mode="range" selected={date} onSelect={setDate} numberOfMonths={1} />
+              <PopoverContent
+                className="w-auto p-0 bg-white z-50"
+                align="start"
+              >
+                <Calendar
+                  mode="range"
+                  selected={date}
+                  onSelect={setDate}
+                  numberOfMonths={1}
+                />
               </PopoverContent>
             </Popover>
-            {errors.date && <span className="text-red-500 text-sm font-semibold">{errors.date.message}</span>}
+            {errors.date && (
+              <span className="text-red-500 text-sm font-semibold">
+                {errors.date.message}
+              </span>
+            )}
           </div>
         )}
 
-        {(valueWorkType === "wfa" || valueAttendanceType === "anualLeave" || valueAttendanceType === "sickLeave") && (
-          <div className="flex flex-col gap-2" ref={fieldRefs.supportingEvidence}>
+        {(valueWorkType === "wfa" ||
+          valueAttendanceType === "anualLeave" ||
+          valueAttendanceType === "sickLeave") && (
+          <div
+            className="flex flex-col gap-2"
+            ref={fieldRefs.supportingEvidence}
+          >
             <Label>Upload Supporting Evidence</Label>
             <FileUploader
               onDrop={(files) => {
                 const file = files[0];
                 if (file) {
-                  setValue("supportingEvidence", file.name, { shouldValidate: true });
+                  setValue("supportingEvidence", file.name, {
+                    shouldValidate: true,
+                  });
                 }
               }}
               accept={{ "image/png": [], "image/jpeg": [], "image/jpg": [] }}
               type="Only support .png, .jpg, .jpeg"
             />
-            {errors.supportingEvidence && <span className="text-red-500 text-sm font-semibold">{errors.supportingEvidence.message}</span>}
-          </div>
-        )}
-
-        {valueAttendanceType !== "anualLeave" && valueAttendanceType !== "sickLeave" && (
-          <div className="w-full min-h-[400px] flex flex-col gap-2">
-            <MapBoxMap onPinReady={handlePinReady} />
-            {pinLocation && (
-              <div className="flex gap-4 w-full">
-                <div className="flex flex-col gap-2 w-full">
-                  <Label>Latitude</Label>
-                  <Input className="w-full" value={pinLocation.lat.toString()} readOnly />
-                </div>
-                <div className="flex flex-col gap-2 w-full">
-                  <Label>Latitude</Label>
-                  <Input className="w-full" value={pinLocation.lng.toString()} readOnly />
-                </div>
-              </div>
+            {errors.supportingEvidence && (
+              <span className="text-red-500 text-sm font-semibold">
+                {errors.supportingEvidence.message}
+              </span>
             )}
           </div>
         )}
+
+        {valueAttendanceType !== "anualLeave" &&
+          valueAttendanceType !== "sickLeave" && (
+            <div className="w-full min-h-[400px] flex flex-col gap-2">
+              <MapBoxMap onPinReady={handlePinReady} />
+            
+            </div>
+          )}
       </Card>
 
       <div className="flex w-full gap-[15px] justify-end mt-6">
         <div className="w-[93px]">
-          <Button variant="outline" onClick={() => router.back()}>
+          <Button variant="outline" type="button" onClick={() => router.back()}>
             Cancel
           </Button>
         </div>

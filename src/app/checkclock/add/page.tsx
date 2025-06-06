@@ -4,19 +4,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import * as React from "react";
 import AttendanceForm from "@/components/custom/attendance-form";
 
+
 export default function AddCheckclockPage() {
   const [valueEmployee, setValueEmployee] = React.useState("");
 
-  // Simulasikan ada data clock in
-  // React.useEffect(() => {
-  //   // Simulasikan pengisian data employee setelah 2 detik
-  //   setTimeout(() => {
-  //     setValueEmployee(clockIn=> "08:00");
-  //   });
-  // }, []);
+
+
 
   return (
-    <Sidebar title="Checkclock">
+    <Sidebar title="Checkclock" >
+     
       <Card>
         <CardContent className="flex flex-col gap-[15px]">
           <div className="px-[10px]">
