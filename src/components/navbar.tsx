@@ -17,17 +17,9 @@ interface NavbarProps {
   title: string;
   avatarImage?: string;
   userName: string;
-  subsPlan: string;
-  activePeriod: string;
 }
 
-export default function Navbar({
-  title,
-  avatarImage,
-  userName,
-  subsPlan,
-  activePeriod,
-}: NavbarProps) {
+export default function Navbar({ title, avatarImage, userName }: NavbarProps) {
   // Fungsi untuk mengambil inisial dari nama pengguna
   const getInitials = (name: string) => {
     const nameParts = name.split(" ");
@@ -347,7 +339,9 @@ export default function Navbar({
               </div>
               <div className="flex flex-col h-auto w-auto">
                 <span className="text-base font-medium text-neutral-950">
-                  {userName}
+                  {userName.length > 20
+                    ? `${userName.slice(0, 20)}...`
+                    : userName}
                 </span>
                 <span className="text-sm text-start ext-neutral-500">
                   Employee ID
@@ -355,7 +349,7 @@ export default function Navbar({
               </div>
             </div>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-[270px] absolute top-3 -right-20 p-3">
+          <DropdownMenuContent className="w-[230px] absolute top-3 -right-20 p-3">
             <DropdownMenuLabel>
               <div className="flex justify-center items-center flex-col w-auto gap-2">
                 <div className="relative flex items-center justify-center w-15 h-15 bg-gray-400 rounded-full">
@@ -372,7 +366,7 @@ export default function Navbar({
                   )}
                 </div>
                 <div className="flex flex-col items-center">
-                  <span className="text-base font-medium text-neutral-900">
+                  <span className="text-base font-medium text-neutral-900 text-center">
                     Hello, {userName}
                   </span>
                   <span className="text-sm text-neutral-500">Employee ID</span>
@@ -380,7 +374,10 @@ export default function Navbar({
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => window.location.href = "/profile"}className="cursor-pointer">
+            <DropdownMenuItem
+              onClick={() => (window.location.href = "/profile")}
+              className="cursor-pointer"
+            >
               Profile
             </DropdownMenuItem>
 
