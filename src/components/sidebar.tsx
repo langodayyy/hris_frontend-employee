@@ -370,7 +370,7 @@ export default function Sidebar({ children, title }: LayoutProps) {
         <div className="flex flex-col">
           <Navbar
             title={title}
-            userName="Silfi Nazarina"
+            userName="Silfi Nazarina jskdjhk kwdsksd"
             subsPlan="Free"
             activePeriod="28 May, 2025"
           />
