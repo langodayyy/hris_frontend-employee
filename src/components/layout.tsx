@@ -2,10 +2,13 @@ import Head from "next/head";
 import Sidebar from "./sidebar";
 import Navbar from "./navbar";
 
+
 type LayoutProps = {
   children: React.ReactNode;
   title: string;
 }
+
+
 
 export default function Layout({ children, title }: LayoutProps) {
   return (
@@ -16,8 +19,11 @@ export default function Layout({ children, title }: LayoutProps) {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       {/* <Sidebar /> */}
-      <Navbar title={title} userName={""} subsPlan={""} activePeriod={""}/>
-      <main>{children}</main>
+      <Navbar title={title} userName={""} />
+      <main>
+       
+        {children}
+        </main>
     </>
   );
 }

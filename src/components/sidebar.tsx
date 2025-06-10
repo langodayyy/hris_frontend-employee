@@ -135,9 +135,10 @@ export default function Sidebar({ children, title }: LayoutProps) {
   const pathname = usePathname();
 
   return (
-    <div className="flex">
+    <div className="flex" >
       {/* Sidebar */}
       <div
+      id="sidebar"
         className={`fixed top-0 left-0 h-full bg-white text-neutral-900 py-4 border-r-2 border-neutral-200 
         ${isOpen ? "w-64" : "w-[77px]"} 
         transition-all duration-300 ease-in-out z-50`}
@@ -371,8 +372,8 @@ export default function Sidebar({ children, title }: LayoutProps) {
           <Navbar
             title={title}
             userName="Silfi Nazarina jskdjhk kwdsksd"
-            subsPlan="Free"
-            activePeriod="28 May, 2025"
+            // subsPlan="Free"
+            // activePeriod="28 May, 2025"
           />
           <main className="p-[30px] ">{children}</main>
         </div>

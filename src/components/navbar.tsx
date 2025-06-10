@@ -69,7 +69,7 @@ export default function Navbar({ title, avatarImage, userName }: NavbarProps) {
   const notificationCount = notifications.length;
 
   return (
-    <nav className="sticky z-50 top-0 flex-row items-center h-auto bg-white px-6 py-[16px] justify-between shadow-[0px_2px_4px_#B0B0B0] grid grid-cols-3">
+    <nav id="navbar" className="sticky z-50 top-0 flex-row items-center h-auto bg-white px-6 py-[16px] justify-between shadow-[0px_2px_4px_#B0B0B0] grid grid-cols-3">
       <div className="flex w-full justify-start h-[29px]">
         <a href="#" className="text-2xl font-medium focus:outline-nonext-left">
           {title}
