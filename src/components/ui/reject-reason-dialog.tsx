@@ -14,7 +14,7 @@ type RejectionReasonDialogProps = {
 export default function RejectionReasonDialog({
   reasonText = "View",
   dialogTitle = "Reason for HR Rejection",
-  dialogDescription = "Your overtime payment submission has been reviewed and unfortunately cannot be approved at this time. The submitted request does not meet the required criteria, as the overtime hours were not pre-approved by the supervisor. Please ensure all future overtime work is authorized in advance.",
+  dialogDescription,
   buttonLabel,
 }: RejectionReasonDialogProps) {
   return (

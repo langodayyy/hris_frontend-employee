@@ -224,7 +224,7 @@ export const columns: ColumnDef<CheckclockOverview>[] = [
          <RejectionReasonDialog
                   reasonText="See Reason"
                   dialogTitle="Why it was rejected"
-                  dialogDescription="During working hours you are not in the office"
+                  dialogDescription={reason}
                   buttonLabel="View"
                 />
       );
