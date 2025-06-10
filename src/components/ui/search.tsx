@@ -21,7 +21,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ suggestion, results }) => {
   };
 
   return (
-    <div className="relative w-full max-w-sm mx-auto">
+    <div className="relative w-full max-w-sm mx-auto" id="nav-search-bar">
       {/* Icon Search */}
       <svg
         className="text-gray-700 absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none"
@@ -60,7 +60,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ suggestion, results }) => {
         <button
           className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm text-blue-500"
           onClick={() => {
-            setQuery('');
+            setQuery("");
             setSearchResults([]);
           }}
         >
@@ -74,23 +74,35 @@ const SearchBar: React.FC<SearchBarProps> = ({ suggestion, results }) => {
             <>
               <div className="px-4 py-2 text-sm text-gray-600">Menu:</div>
               {suggestion
-                .filter(suggestion => suggestion.toLowerCase().includes(query.toLowerCase()))
+                .filter((suggestion) =>
+                  suggestion.toLowerCase().includes(query.toLowerCase())
+                )
                 .map((menu, idx) => (
-                  <div key={idx} className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                  <div
+                    key={idx}
+                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                  >
                     {menu}
                   </div>
                 ))}
               <div className="px-4 py-2 text-sm text-gray-600">Data:</div>
               {results
-                .filter(item => item.toLowerCase().includes(query.toLowerCase()))
+                .filter((item) =>
+                  item.toLowerCase().includes(query.toLowerCase())
+                )
                 .map((item, idx) => (
-                  <div key={idx} className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                  <div
+                    key={idx}
+                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                  >
                     {item}
                   </div>
                 ))}
             </>
           ) : (
-            <div className="px-4 py-2 text-sm text-gray-500">No results found</div>
+            <div className="px-4 py-2 text-sm text-gray-500">
+              No results found
+            </div>
           )}
         </div>
       )}

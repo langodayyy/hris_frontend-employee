@@ -3,9 +3,9 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import Link from "next/link";
 import Navbar from "./navbar";
-import Image from "next/image";
 
 type NavItemProps = {
+  id?: string;
   url: string;
   isSelected: boolean;
   svgIcon: React.ReactNode;
@@ -26,11 +26,11 @@ function NavItem({
   text,
   isOpen,
   submenu,
+  id
 }: NavItemProps) {
-  const pathname = usePathname(); // Ensure this hook is always called at the top level
-
+  const pathname = usePathname(); 
   const isSubmenuSelected = submenu?.some((item) => item.href === pathname);
-  const [isExpanded, setIsExpanded] = useState(isSubmenuSelected); // Initialize based on selection
+  const [isExpanded, setIsExpanded] = useState(isSubmenuSelected); 
 
   const handleToggle = () => {
     if (submenu && submenu.length > 0) {
@@ -50,6 +50,7 @@ function NavItem({
           {submenu && submenu.length > 0 ? (
             <button
               onClick={handleToggle}
+              id={id}
               className={`flex items-center justify-between gap-2 px-[21px] py-4 rounded-lg w-full transition-all text-left ${
                 isSelected || isSubmenuSelected
                   ? "bg-primary-900 text-white "
@@ -91,6 +92,7 @@ function NavItem({
           ) : (
             <Link
               href={url}
+              id={id}
               className={`flex items-center justify-between gap-2 px-[21px] py-4 rounded-lg w-full transition-all text-left ${
                 isSelected
                   ? " bg-primary-900 text-white"
@@ -141,6 +143,7 @@ export default function Sidebar({ children, title }: LayoutProps) {
         className={`fixed top-0 left-0 h-full bg-white text-neutral-900 py-4 border-r-2 border-neutral-200 
         ${isOpen ? "w-64" : "w-[77px]"} 
         transition-all duration-300 ease-in-out z-50`}
+        id="sidebar"
       >
         <button
           onClick={() => setIsOpen(!isOpen)}
@@ -298,8 +301,9 @@ export default function Sidebar({ children, title }: LayoutProps) {
                   />
                 </svg>
               }
+              id="dashboard-menu"
             />
-           
+
             <NavItem
               url="/checkclock"
               isOpen={isOpen}
@@ -323,14 +327,13 @@ export default function Sidebar({ children, title }: LayoutProps) {
                   />
                 </svg>
               }
-              
+              id="checkclock-menu"
             />
             <NavItem
               url="/overtime"
               isOpen={isOpen}
               isSelected={pathname.startsWith("/overtime")}
               text="Overtime"
-              
               svgIcon={
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -356,6 +359,7 @@ export default function Sidebar({ children, title }: LayoutProps) {
                   </defs>
                 </svg>
               }
+              id="overtime-menu"
             />
           </div>
         </nav>
