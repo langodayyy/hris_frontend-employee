@@ -14,7 +14,7 @@ export default function AddCheckclockPage() {
   return (
     <Sidebar title="Checkclock" >
      
-      <Card>
+      <Card id="checkclock-add">
         <CardContent className="flex flex-col gap-[15px]">
           <div className="px-[10px]">
             <h1 className="text-lg font-medium ">

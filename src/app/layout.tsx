@@ -47,6 +47,21 @@ const menuSteps = {
       disableBeacon: true,
     },
   ],
+  // contoh selain path luar
+  "overtime/add": [
+    {
+      target: "#overtime-add",
+      content: "Welcome!! Please spare a minute to learn about our page",
+      disableBeacon: true,
+    },
+  ],
+  "checkclock/add": [
+    {
+      target: "#checkclock-add",
+      content: "Welcome!! Please spare a minute to learn about our page",
+      disableBeacon: true,
+    },
+  ],
 };
 
 export default function RootLayout({

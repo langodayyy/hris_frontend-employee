@@ -43,7 +43,7 @@ export default function AddOvertimePaymentPage() {
 
   return (
     <Sidebar title="Overtime">
-      <Card>
+      <Card id="overtime-add">
         <CardContent className="flex flex-col gap-[15px]">
           <div className="px-[10px]">
             <h1 className="text-lg font-medium ">
