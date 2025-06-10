@@ -6,10 +6,12 @@ import { OvertimeOverview, columns } from "./columns";
 import { DataTable } from "./data-table";
 import { useFormContext } from "@/components/context/FormContext";
 import { Toaster, toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
 // import Cookies from "js-cookie";
 
 export default function OvertimeOverviewPage() {
   const [data, setData] = useState<OvertimeOverview[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function fetchData() {
@@ -33,6 +35,7 @@ export default function OvertimeOverviewPage() {
     };
       });
       setData(dynamicData);
+      setIsLoading(false);
     }
 
     fetchData();
@@ -48,12 +51,16 @@ export default function OvertimeOverviewPage() {
 
   return (
     <Sidebar title="Overtime">
-       <Toaster position="bottom-right" expand={true} />
-      <div className=" bg-white rounded-[15px] p-5 flex flex-col gap-[10px]">
-        <div className="container mx-auto">
-          <DataTable columns={columns} data={data} />
+      <Toaster position="bottom-right" expand={true} />
+      {isLoading ? (
+        <Skeleton className="rounded-[15px] w-full min-h-[230px] " />
+      ) : (
+        <div className=" bg-white rounded-[15px] p-5 flex flex-col gap-[10px]">
+          <div className="container mx-auto">
+            <DataTable columns={columns} data={data} />
+          </div>
         </div>
-      </div>
+      )}
     </Sidebar>
   );
 }

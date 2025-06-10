@@ -6,10 +6,12 @@ import { CheckclockOverview, columns } from "./columns";
 import { DataTable } from "./data-table";
 import { useFormContext } from "@/components/context/FormContext";
 import { Toaster, toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
 // import Cookies from "js-cookie";
 
 export default function CheckclockOverviewPage() {
   const [data, setData] = useState<CheckclockOverview[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function fetchData() {
@@ -149,6 +151,7 @@ export default function CheckclockOverviewPage() {
       console.log("Dynamic Data:", dynamicData);
       console.log(dynamicData);
       setData([absentWithClock, absentNoClock, ...dynamicData]);
+      setIsLoading(false);
     }
 
     fetchData();
@@ -165,11 +168,15 @@ export default function CheckclockOverviewPage() {
   return (
     <Sidebar title="Checkclock">
        <Toaster position="bottom-right" expand={true} />
+       {isLoading ? (
+        <Skeleton className="rounded-[15px] w-full min-h-[230px] " />
+      ) : (
       <div className=" bg-white rounded-[15px] p-5 flex flex-col gap-[10px]">
         <div className="container mx-auto">
           <DataTable columns={columns} data={data} />
         </div>
       </div>
+      )}
     </Sidebar>
   );
 }
