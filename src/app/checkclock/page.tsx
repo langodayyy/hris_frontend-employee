@@ -7,8 +7,9 @@ import { DataTable } from "./data-table";
 import { useFormContext } from "@/components/context/FormContext";
 import Cookies from "js-cookie";
 import { Toaster, toast } from "sonner";
-import { CheckclockResponse } from "../types/checkclock";
+import { CheckclockResponse } from "../../types/checkclock";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useCKSettingData } from "@/hooks/useCheckClockData";
 // import Cookies from "js-cookie";
 
 export default function CheckclockOverviewPage() {
@@ -16,7 +17,12 @@ export default function CheckclockOverviewPage() {
   const [allData, setAllData] = useState<CheckclockOverview[]>([]);
   const [data, setData] = useState<CheckclockOverview[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // const [error, setError] = useState<string | null>(null);
+  // const [locationRule, setLocationRule] = useState([]);
+
+  const { error, checkClockData, locationRule } = useCKSettingData();
+
+  console.log("cc",checkClockData)
 
   const handleCalendarChange = (selectedDate: Date | undefined) => {
     setDate(selectedDate);
@@ -46,65 +52,58 @@ export default function CheckclockOverviewPage() {
   };
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const response = await getCheckClock();
+    // This effect will run whenever checkClockData changes
+    if (checkClockData) { // Only proceed if checkClockData is not null/undefined
+      const transformedData: CheckclockOverview[] = checkClockData.map(
+        (item: CheckclockResponse) => {
+          // Determine if approvalStatus should be cleared
+          const shouldClearStatus =
+            item.approval_status !== "Rejected" &&
+            ["Late", "On Time", "Absent"].includes(item.status);
 
-        if (response.success && response.data) {
-          const transformedData: CheckclockOverview[] = response.data.map(
-            (item: CheckclockResponse) => {
-              const shouldClearStatus =
-                item.approval_status !== "Rejected" &&
-                (item.status === "Late" ||
-                  item.status === "On Time" ||
-                  item.status === "Absent");
-
-              return {
-                data_id: item.data_id,
-                date: item.date,
-                clockIn: item.clock_in || "--:--",
-                clockOut: item.clock_out || "--:--",
-                workType: item.work_type,
-                status: item.status,
-                approvalStatus: shouldClearStatus ? "" : item.approval_status,
-                latitude: item.latitude || null,
-                longitude: item.longitude || null,
-                startDate: item.absent_start_date || "-",
-                endDate: item.absent_end_date || "-",
-                reason: item.reject_reason,
-              };
-            }
-          );
-
-          setAllData(transformedData); // sets for calendar filter use
-
-          // Filter by today's date directly using transformedData
-          const today = new Date();
-          const todayStr = today.toISOString().slice(0, 10);
-
-          const filtered = transformedData.filter((item) => {
-            if (!item.date || typeof item.date !== "string") return false;
-
-            const itemDateStr = new Date(item.date).toISOString().slice(0, 10);
-            return itemDateStr === todayStr;
-          });
-
-          console.log("Filtered today data", filtered);
-          setDate(today); // update calendar
-          setData(filtered); // show today's data
-        } else {
-          setError(response.errors?.general?.[0] || "Failed to fetch data");
+          return {
+            id: Number(item.data_id),
+            date:
+              item.absent_start_date && item.absent_end_date
+                ? { startDate: item.absent_start_date, endDate: item.absent_end_date }
+                : item.date,
+            clockIn: item.clock_in || "--:--",
+            clockOut: item.clock_out || "--:--",
+            workType: item.work_type,
+            status: item.status,
+            approvalStatus: shouldClearStatus ? "" : item.approval_status,
+            reason: item.reject_reason ?? undefined,
+          };
         }
-      } catch (err) {
-        setError("An error occurred while fetching data");
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
+      );
 
-    fetchData();
-  }, []);
+      setAllData(transformedData); // Store all transformed data for filtering
+
+      // Filter by today's date directly using transformedData
+      const today = new Date();
+      const todayStr = today.toISOString().slice(0, 10); // Format YYYY-MM-DD
+
+      const filteredToday = transformedData.filter((item) => {
+        if (!item.date) return false;
+
+        if (typeof item.date === "string") {
+          const itemDateStr = new Date(item.date).toISOString().slice(0, 10);
+          return itemDateStr === todayStr;
+        } else if (item.date && typeof item.date === "object" && 'startDate' in item.date && 'endDate' in item.date) {
+            const startDate = new Date(item.date.startDate);
+            const endDate = new Date(item.date.endDate);
+            // Check if today falls within the range
+            return today >= startDate && today <= endDate;
+        }
+        return false;
+      });
+
+      // console.log("Filtered today's data on initial load:", filteredToday);
+      setDate(today); // Set calendar to today
+      setData(filteredToday); // Show today's data initially
+      setLoading(false)
+    }
+  }, [checkClockData]);
 
   if (loading) {
     return (
@@ -282,9 +281,11 @@ export default function CheckclockOverviewPage() {
        <Toaster position="bottom-right" expand={true} />
       <div className=" bg-white rounded-[15px] p-5 flex flex-col gap-[10px]">
         <div className="container mx-auto">
-          <DataTable columns={columns} data={data}
+          <DataTable 
+          columns={columns} 
+          data={data}
           date={date}
-            onDateChange={handleCalendarChange}/>
+          onDateChange={handleCalendarChange}/>
         </div>
       </div>
     </Sidebar>

@@ -4,12 +4,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import * as React from "react";
 import AttendanceForm from "@/components/custom/attendance-form";
 
+// type AddCheckClock = {
+//   officeLat?: number;
+//   officeLng?: number;
+//   onPinReady?: (lat: number, lng: number) => void;
+// };
 
 export default function AddCheckclockPage() {
   const [valueEmployee, setValueEmployee] = React.useState("");
-
-
-
 
   return (
     <Sidebar title="Checkclock" >

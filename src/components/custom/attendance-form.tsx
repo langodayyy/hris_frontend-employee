@@ -27,6 +27,7 @@ import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
 import { format, set } from "date-fns";
 import { FileUploader } from "../ui/fileUploader";
+import { useCKSettingData } from "@/hooks/useCheckClockData";
 
 const attendanceTypeOptions = [
   { label: "Clock In", value: "clockIn" },
@@ -108,6 +109,11 @@ const AttendanceForm: React.FC = () => {
   } | null>(null);
   const { setErrors, setSuccess } = useFormContext();
 
+  const {locationRule} = useCKSettingData();
+
+  console.log(locationRule);
+  console.log(locationRule?.latitude, locationRule?.longitude);
+
   const fieldRefs = {
     workType: useRef<HTMLDivElement>(null),
     attendanceType: useRef<HTMLDivElement>(null),
@@ -153,11 +159,11 @@ const AttendanceForm: React.FC = () => {
     setPinLocation({ lat, lng });
   };
 
-  const handleSave = () => {
-    console.log("Data berhasil disimpan!");
-    setSuccess({ attendance: ["Attendance submitted successfully!"] });
-    router.push("/checkclock");
-  };
+  // const handleSave = () => {
+  //   console.log("Data berhasil disimpan!");
+  //   setSuccess({ attendance: ["Attendance submitted successfully!"] });
+  //   router.push("/checkclock");
+  // };
 
   const onSubmit = (data: FormValues) => {
     console.log("Form submitted successfully:", data);
@@ -310,7 +316,7 @@ const AttendanceForm: React.FC = () => {
         {valueAttendanceType !== "anualLeave" &&
           valueAttendanceType !== "sickLeave" && (
             <div className="w-full min-h-[400px] flex flex-col gap-2">
-              <MapBoxMap onPinReady={handlePinReady} />
+              <MapBoxMap officeLat={locationRule?.latitude} officeLng={locationRule?.longitude} />
             
             </div>
           )}
@@ -323,7 +329,9 @@ const AttendanceForm: React.FC = () => {
           </Button>
         </div>
         <div className="w-[93px]">
-          <Button type="submit" onClick={handleSave}>
+          <Button type="submit" 
+          // onClick={handleSave}
+          >
             Submit
           </Button>
         </div>
