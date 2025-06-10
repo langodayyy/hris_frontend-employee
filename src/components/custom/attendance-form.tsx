@@ -27,6 +27,7 @@ import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
 import { format, set } from "date-fns";
 import { FileUploader } from "../ui/fileUploader";
+import { Spinner } from "../ui/spinner";
 
 const attendanceTypeOptions = [
   { label: "Clock In", value: "clockIn" },
@@ -107,6 +108,7 @@ const AttendanceForm: React.FC = () => {
     lng: number;
   } | null>(null);
   const { setErrors, setSuccess } = useFormContext();
+  const [isLoading, setLoading] = useState(true);
 
   const fieldRefs = {
     workType: useRef<HTMLDivElement>(null),
@@ -151,6 +153,7 @@ const AttendanceForm: React.FC = () => {
 
   const handlePinReady = (lat: number, lng: number) => {
     setPinLocation({ lat, lng });
+    setLoading(false);
   };
 
   const handleSave = () => {
@@ -309,9 +312,13 @@ const AttendanceForm: React.FC = () => {
 
         {valueAttendanceType !== "anualLeave" &&
           valueAttendanceType !== "sickLeave" && (
-            <div className="w-full min-h-[400px] flex flex-col gap-2">
+            <div className="w-full min-h-[400px] flex flex-col gap-2 relative">
+              {isLoading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 z-10">
+                  <Spinner size="large" />
+                </div>
+              )}
               <MapBoxMap onPinReady={handlePinReady} />
-            
             </div>
           )}
       </Card>
