@@ -2,23 +2,24 @@
 
 import mapboxgl from "mapbox-gl";
 import { useEffect, useRef } from "react";
-import * as turf from "@turf/turf";
 
 mapboxgl.accessToken = `${process.env.NEXT_PUBLIC_MAPBOX_KEY}`;
 
 type MapboxMapProps = {
-  onPinReady: (lat: number, lng: number) => void;
+  officeLat?: number;
+  officeLng?: number;
+  onPinReady?: (lat: number, lng: number) => void;
 };
 
-export default function MapboxMap({ onPinReady }: MapboxMapProps) {
+export default function MapboxMap({ onPinReady, officeLat, officeLng }: MapboxMapProps) {
   const mapContainer = useRef(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
 
-  const officeLat = -7.944280192922373;
-  const officeLng = 112.60562448554032;
-
+  // Always call hooks in the same order
   useEffect(() => {
-    if (!mapContainer.current) return;
+    if (!mapContainer.current || officeLat == undefined || officeLng == undefined) {
+      return; // Exit early if required props are missing
+    }
 
     const map = new mapboxgl.Map({
       container: mapContainer.current,
@@ -37,7 +38,7 @@ export default function MapboxMap({ onPinReady }: MapboxMapProps) {
     map.on("load", () => {
       map.loadImage("../images/current-location.png", (error, image) => {
         if (error || !image) {
-          console.error("Gagal memuat ikon pin:", error);
+          console.error("Failed to load pin icon:", error);
           return;
         }
 
@@ -45,12 +46,11 @@ export default function MapboxMap({ onPinReady }: MapboxMapProps) {
           map.addImage("pin", image);
         }
 
-        // Tambahkan marker lokasi office
+        // Add office marker
         map.loadImage("../images/office.png", (err, officeImage) => {
           if (!err && officeImage && !map.hasImage("office-pin")) {
             map.addImage("office-pin", officeImage);
           }
-          // Add office marker
           map.addSource("office-point", {
             type: "geojson",
             data: {
@@ -73,7 +73,7 @@ export default function MapboxMap({ onPinReady }: MapboxMapProps) {
             source: "office-point",
             layout: {
               "icon-image": "office-pin",
-              "icon-size": 0.06, // Ubah ukuran icon office di sini
+              "icon-size": 0.06,
               "icon-anchor": "bottom",
             },
           });
@@ -83,32 +83,6 @@ export default function MapboxMap({ onPinReady }: MapboxMapProps) {
           navigator.geolocation.getCurrentPosition((pos) => {
             const { latitude, longitude } = pos.coords;
 
-            // Hapus circle lama jika ada
-            if (map.getLayer("radius-circle-fill"))
-              map.removeLayer("radius-circle-fill");
-            if (map.getSource("radius-circle"))
-              map.removeSource("radius-circle");
-
-            // Tambahkan lingkaran radius di lokasi user
-            // const userCircle = turf.circle([longitude, latitude], 20, {
-            //   steps: 64,
-            //   units: "meters",
-            // });
-            // map.addSource("radius-circle", {
-            //   type: "geojson",
-            //   data: userCircle,
-            // });
-            // map.addLayer({
-            //   id: "radius-circle-fill",
-            //   type: "fill",
-            //   source: "radius-circle",
-            //   paint: {
-            //     "fill-color": "#FF0000",
-            //     "fill-opacity": 0.1,
-            //   },
-            // });
-
-            // Add source with actual location
             map.addSource("pin-point", {
               type: "geojson",
               data: {
@@ -137,10 +111,8 @@ export default function MapboxMap({ onPinReady }: MapboxMapProps) {
               },
             });
 
-            // Optionally fly to actual location
             map.flyTo({ center: [longitude, latitude], zoom: 17 });
 
-            // Kirim data lat long ke parent jika ada callback
             if (typeof onPinReady === "function") {
               onPinReady(latitude, longitude);
             }
@@ -150,13 +122,22 @@ export default function MapboxMap({ onPinReady }: MapboxMapProps) {
     });
 
     return () => map.remove();
-  }, []);
+  }, [officeLat, officeLng, onPinReady]);
+
+  // Conditional rendering for missing data
+  if (officeLat == undefined || officeLng == undefined) {
+    return (
+      <div className="p-4 text-sm text-gray-600 italic">
+        Data location not found.
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full h-full rounded-md">
       <div ref={mapContainer} className="w-full h-[400px] rounded-md" />
 
-      {/* Watermark di sudut kiri bawah */}
+      {/* Watermark */}
       <div className="absolute bottom-2 left-2 text-xs text-black bg-white/80 px-2 py-1 rounded shadow">
         © Mapbox © OpenStreetMap
       </div>
@@ -189,18 +170,17 @@ export default function MapboxMap({ onPinReady }: MapboxMapProps) {
             <path d="M12 1a1 1 0 0 1 1 1v1.055a9.004 9.004 0 0 1 7.946 7.945h1.054a1 1 0 0 1 0 2h-1.055a9.004 9.004 0 0 1 -7.944 7.945l-.001 1.055a1 1 0 0 1 -2 0v-1.055a9.004 9.004 0 0 1 -7.945 -7.944l-1.055 -.001a1 1 0 0 1 0 -2h1.055a9.004 9.004 0 0 1 7.945 -7.945v-1.055a1 1 0 0 1 1 -1m0 4a7 7 0 1 0 0 14a7 7 0 0 0 0 -14m0 3a4 4 0 1 1 -4 4l.005 -.2a4 4 0 0 1 3.995 -3.8" />
           </svg>
         </div>
-        <div className="text-black bg-primary-900 p-2 rounded shadow cursor-pointer hover:bg-primary-950"  onClick={() => {
-            if (mapRef.current && navigator.geolocation) {
-              navigator.geolocation.getCurrentPosition((pos) => {
-                if (mapRef.current) {
-                  mapRef.current.flyTo({
-                    center: [officeLng, officeLat],
-                    zoom: 17,
-                  });
-                }
+        <div
+          className="text-black bg-primary-900 p-2 rounded shadow cursor-pointer hover:bg-primary-950"
+          onClick={() => {
+            if (mapRef.current) {
+              mapRef.current.flyTo({
+                center: [officeLng, officeLat],
+                zoom: 17,
               });
             }
-          }}>
+          }}
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="32"

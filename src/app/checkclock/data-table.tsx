@@ -65,11 +65,15 @@ import {
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  date?: Date;
+  onDateChange: (date: Date | undefined) => void;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  date, 
+  onDateChange
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -83,7 +87,7 @@ export function DataTable<TData, TValue>({
   const [tempFilters, setTempFilters] = useState(filters);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
-  const [date, setDate] = React.useState<Date>();
+  // const [date, setDate] = React.useState<Date>();
   const table = useReactTable({
     data,
     columns,
@@ -160,7 +164,7 @@ export function DataTable<TData, TValue>({
                 <Calendar
                   mode="single"
                   selected={date}
-                  onSelect={setDate}
+                  onSelect={onDateChange}
                   initialFocus
                 />
               </PopoverContent>
@@ -212,7 +216,7 @@ export function DataTable<TData, TValue>({
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-64">
                 <DropdownMenuLabel>Status</DropdownMenuLabel>
-                {["On Time", "Late", "Anual Leave", "Sick Leave", "Absent"].map(
+                {["On Time", "Late", "Annual Leave", "Sick Leave", "Absent"].map(
                   (status) => (
                     <DropdownMenuCheckboxItem
                       key={status}
