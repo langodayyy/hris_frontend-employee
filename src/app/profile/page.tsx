@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import Sidebar from "@/components/sidebar";
 import PersonalInformation from "./personal-information";
 import ContactInformation from "./contact-information";
@@ -6,22 +6,44 @@ import EmploymentOverview from "./employment-overview";
 import EmployeeDocuments from "./documents";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useParams, useRouter } from "next/navigation";
 import { EmployeeResponse } from "@/types/employee";
 import { Spinner } from "@/components/ui/spinner";
 import Cookies from "js-cookie";
 import React from "react";
-import { AlertDialogContent, AlertDialogHeader } from "@/components/ui/alert-dialog";
+import {
+  AlertDialogContent,
+  AlertDialogHeader,
+} from "@/components/ui/alert-dialog";
 import PasswordInput from "@/components/ui/passwordInput";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export default function EmployeeDetails(){
+export default function EmployeeDetails() {
   const [employeeStatus, setEmployeeStatus] = useState("");
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const inputFileRef = useRef<HTMLInputElement>(null);
@@ -332,7 +354,10 @@ export default function EmployeeDetails(){
           // <Card className="flex-1 gap-[15px] rounded-[15px] border border-black/15 bg-white shadow-[0px_2px_2px_0px_rgba(0,0,0,0.25)] overflow-hidden">
           // {/* <Spinner className="w-full mx-[20px] my-[10px]" size="medium" /> */}
           // {/* </Card> */}
-          <Skeleton className="rounded-[15px] w-full min-h-[230px]" />
+          <>
+            <Skeleton className="rounded-[15px] w-full min-h-[230px]" />
+            <Skeleton className="rounded-[15px] w-full min-h-[230px]" />
+          </>
         ) : (
           <div>
             <Card className="flex-1 gap-[15px] rounded-[15px] border border-black/15 bg-white shadow-[0px_2px_2px_0px_rgba(0,0,0,0.25)] overflow-hidden">

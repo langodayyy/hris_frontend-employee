@@ -29,8 +29,14 @@ export default function Navbar({ title, avatarImage, userName }: NavbarProps) {
   };
 
   //sugestion searchbar
-  const suggestion = ["Dashboard", "Profile", "Settings", "Logout"];
-  const result = ["Article 1", "Product A", "Blog Post", "Item XYZ"];
+  const result = [
+    { label: "Dashboard", path: "/dashboard" },
+    { label: "Checkclock", path: "/checkclock" },
+    { label: "Add Checkclock", path: "/checkclock/add" },
+    { label: "Overtime", path: "/overtime" },
+    { label: "Add Overtime", path: "/overtime/add" },
+    { label: "Profile", path: "/profile" },
+  ];
 
   // array notification sample
   const notifications = [
@@ -76,14 +82,14 @@ export default function Navbar({ title, avatarImage, userName }: NavbarProps) {
         </a>
       </div>
       <div className="flex flex-row items-center justify-center w-full h-[36px] gap-[12px] relative">
-        <SearchBar suggestion={suggestion} results={result} />
+        <SearchBar results={result} />
       </div>
 
       {/* notification */}
       <div className="flex flex-row gap-[24px] w-auto h-auto justify-end">
         <DropdownMenu>
           <DropdownMenuTrigger>
-            <div className="relative flex items-center">
+            <div className="relative flex items-center" id="notification">
               <div className="relative ">
                 <a href="#">
                   <svg
@@ -123,7 +129,6 @@ export default function Navbar({ title, avatarImage, userName }: NavbarProps) {
               <DropdownMenuSeparator className="m-0" />
               <DropdownMenuItem className="h-[91px]">
                 <div className="flex items-center flex-row gap-[10px] w-auto h-[91px] py-3">
-                  {/* weight avatarnya gj ding */}
                   <div className="w-13">
                     <div className="relative flex items-center justify-center w-full h-10 bg-gray-400 rounded-full">
                       {avatarImage ? (
@@ -154,7 +159,6 @@ export default function Navbar({ title, avatarImage, userName }: NavbarProps) {
               </DropdownMenuItem>
               <DropdownMenuItem className="h-[91px]">
                 <div className="flex items-center flex-row gap-2.5 w-auto h-[91px] py-3">
-                  {/* weight avatarnya gj ding */}
                   <div className="flex -space-x-7 overflow-hidden">
                     <div className="relative flex items-center justify-center w-13 h-10 bg-gray-400 rounded-full ring-2 ring-white">
                       {avatarImage ? (
@@ -198,7 +202,6 @@ export default function Navbar({ title, avatarImage, userName }: NavbarProps) {
               </DropdownMenuItem>
               <DropdownMenuItem className="h-[91px]">
                 <div className="flex items-center flex-row gap-2.5 w-auto h-[91px] py-3">
-                  {/* weight avatarnya gj ding */}
                   <div className="w-13">
                     <div className="relative flex items-center justify-center w-full h-10 bg-gray-400 rounded-full">
                       {avatarImage ? (
@@ -229,7 +232,6 @@ export default function Navbar({ title, avatarImage, userName }: NavbarProps) {
               </DropdownMenuItem>
               <DropdownMenuItem className="h-[91px]">
                 <div className="flex items-center flex-row gap-2.5 w-auto h-[91px] py-3">
-                  {/* weight avatarnya gj ding */}
                   <div className="flex -space-x-6 overflow-hidden">
                     <div className="relative flex items-center justify-center w-13 h-10 bg-gray-400 rounded-full ring-2 ring-white">
                       {avatarImage ? (
@@ -323,7 +325,10 @@ export default function Navbar({ title, avatarImage, userName }: NavbarProps) {
         {/* user dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger>
-            <div className="flex flex-row gap-3 w-full h-full rounded-full cursor-pointer transition duration-15 hover:bg-gray-100">
+            <div
+              className="flex flex-row gap-3 w-full h-full rounded-full cursor-pointer transition duration-15 hover:bg-gray-100"
+              id="profile"
+            >
               <div className="relative flex items-center justify-center w-10 h-10 bg-gray-400 rounded-full">
                 {avatarImage ? (
                   <img

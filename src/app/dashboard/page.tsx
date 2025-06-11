@@ -3,7 +3,11 @@ import Sidebar from "@/components/sidebar";
 import { Button } from "@/components/ui/button";
 import { Label as UILabel } from "@/components/ui/label";
 import { useState, useEffect } from "react";
+
 import Cookies from "js-cookie";
+
+import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
+
 import {
   Popover,
   PopoverContent,
@@ -35,7 +39,9 @@ import AttendancePieChart from "@/components/custom/attendance-pie-chart";
 import { TotalQuotaCard } from "@/components/ui/total-quota-card";
 import ExpectedSalaryCard from "@/components/custom/expected-salary-card";
 import { Skeleton } from "@/components/ui/skeleton";
+
 import { toast, Toaster } from "sonner";
+
 
 type WorkLog = {
   date: string;
@@ -230,15 +236,18 @@ export default function DashboardPage() {
   }
 }, [selectedMonth, selectedYear]); // 👈 Tambahkan ini
 
-
   const [isLoading, setIsLoading] = useState(true);
 
   // Simulasi untuk mengubah isLoading menjadi FALSE setelah beberapa waktu (SIMULASI SAJA SEBELUM FETCHING)
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false); // Setelah 1.5 detik, ubah isLoading jadi FALSE
-    }, 3000); // 1500 milidetik = 1.5 detik
-    return () => clearTimeout(timer);
+    }, 1500);
+
+
+    return () => {
+      clearTimeout(timer);
+    };
   }, []);
 
   // Filter data berdasarkan bulan dan tahun yang dipilih
@@ -275,7 +284,8 @@ export default function DashboardPage() {
     <Sidebar title="Dashboard">
       <Toaster position="bottom-right" expand={true} richColors closeButton></Toaster>
       <div className="flex flex-col gap-[30px]">
-        <div className="w-[229px]">
+        <div className="w-[229px]" id="period-selection">
+          {" "}
           {isLoading ? (
             <Skeleton className="h-[40px] w-[229px] rounded-md" />
           ) : (
@@ -374,7 +384,8 @@ export default function DashboardPage() {
             </Popover>
           )}
         </div>
-        <div className="grid grid-cols-4 gap-[30px]">
+        <div className="grid grid-cols-4 gap-[30px]" id="dashboard-cards">
+          {" "}
           {isLoading ? (
             <>
               <Skeleton className="h-[135px] w-full rounded-lg" />
@@ -475,11 +486,14 @@ export default function DashboardPage() {
         {isLoading ? (
           <Skeleton className="h-[385px] w-full rounded-lg" />
         ) : (
-          <WorkHoursChart
-            data={filteredData}
-            selectedMonth={selectedMonth}
-            selectedYear={selectedYear}
-          />
+          <div id="work-hours-chart">
+            {" "}
+            <WorkHoursChart
+              data={filteredData}
+              selectedMonth={selectedMonth}
+              selectedYear={selectedYear}
+            />
+          </div>
         )}
         <div className="grid grid-cols-2 gap-[30px]">
           {isLoading ? (
@@ -491,7 +505,8 @@ export default function DashboardPage() {
             </>
           ) : (
             <>
-              <Card className="">
+              <Card className="" id="attendance-summary">
+                {" "}
                 <CardHeader className="items-center pb-0 gap-3">
                   <div className="">
                     <CardTitle className="text-lg">
@@ -518,7 +533,11 @@ export default function DashboardPage() {
                   />
                 </div>
               </Card>
-              <Card className="px-6 gap-[10px] flex flex-col">
+              <Card
+                className="px-6 gap-[10px] flex flex-col"
+                id="leave-summary"
+              >
+                {" "}
                 <CardHeader className="items-center pb-0 gap-3 px-0">
                   <div className="">
                     <CardTitle className="text-lg">Leave Summary</CardTitle>
@@ -555,15 +574,23 @@ export default function DashboardPage() {
               </Card>
 
               {/* Expected Monthly Salary Card extracted to component */}
-              <ExpectedSalaryCard
-                salary={salary}
-                enrichedSalary={enrichedSalary}
-                selectedMonth={selectedMonth}
-                selectedYear={selectedYear}
-                monthNames={monthNames}
-                chartConfig={chartConfig}
-              />
-              <Card className="px-6 gap-[10px] flex flex-col">
+              <div id="expected-salary">
+                {" "}
+                {/* Add id around the component */}
+                <ExpectedSalaryCard
+                  salary={salary}
+                  enrichedSalary={enrichedSalary}
+                  selectedMonth={selectedMonth}
+                  selectedYear={selectedYear}
+                  monthNames={monthNames}
+                  chartConfig={chartConfig}
+                />
+              </div>
+              <Card
+                className="px-6 gap-[10px] flex flex-col"
+                id="overtime-summary"
+              >
+                {" "}
                 <CardHeader className="items-center pb-0 gap-3 px-0">
                   <div className="">
                     <CardTitle className="text-lg">Overtime Summary</CardTitle>
