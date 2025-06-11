@@ -9,6 +9,10 @@ import { EditProvider } from "../components/context/EditFormContext";
 import { useEffect, useRef, useState } from "react";
 import Joyride from "react-joyride";
 import { usePathname } from "next/navigation";
+import dynamic from "next/dynamic"; // Import dynamic
+
+// Dynamically import Joyride with SSR disabled
+const DynamicJoyride = dynamic(() => import("react-joyride"), { ssr: false });
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -199,7 +203,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {showJoyride && (
-          <Joyride
+          <DynamicJoyride
             key={joyrideKey}
             steps={steps}
             continuous={true}
