@@ -152,6 +152,7 @@ export function DataTable<TData, TValue>({
                     "w-[280px] justify-start text-left font-normal",
                     !date && "text-neutral-300"
                   )}
+                  id="overtime-date-filter"
                 >
                   <CalendarIcon />
                   {date ? format(date, "PPP") : <span>Today</span>}
@@ -206,6 +207,7 @@ export function DataTable<TData, TValue>({
                       />
                     </svg>
                   }
+                  id="overtime-filter"
                 >
                   Filters
                 </Button>
@@ -327,6 +329,7 @@ export function DataTable<TData, TValue>({
               onClick={() =>
                 (window.location.href = "/overtime/add")
               }
+              id="overtime-add"
             >
               Add
             </Button>

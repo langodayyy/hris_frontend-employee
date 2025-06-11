@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Label as UILabel } from "@/components/ui/label";
 import { useState, useEffect } from "react";
 import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
-
 import {
   Popover,
   PopoverContent,
@@ -36,7 +35,6 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { TrendingUp } from "lucide-react";
 import AttendancePieChart from "@/components/custom/attendance-pie-chart";
 import { TotalQuotaCard } from "@/components/ui/total-quota-card";
 import ExpectedSalaryCard from "@/components/custom/expected-salary-card";
@@ -45,22 +43,22 @@ import { Skeleton } from "@/components/ui/skeleton";
 const workHours = [
   // June 2025
   { date: "2025-06-01", clockIn: "08:10", clockOut: "17:12" },
-  //   { date: "2025-06-02", clockIn: "08:15", clockOut: "17:05" },
+  //   { date: "2025-06-02", clockIn: "08:15", clockOut: "17:05" },
   { date: "2025-06-03", clockIn: "08:08", clockOut: "17:20" },
   { date: "2025-06-04", clockIn: "08:12", clockOut: "17:10" },
   { date: "2025-06-05", clockIn: "08:20", clockOut: "17:18" },
   { date: "2025-06-06", clockIn: "08:05", clockOut: "17:25" },
-  //   { date: "2025-06-07", clockIn: "08:18", clockOut: "17:15" },
-  //   { date: "2025-06-08", clockIn: "08:11", clockOut: "17:22" },
-  //   { date: "2025-06-09", clockIn: "08:14", clockOut: "17:09" },
+  //   { date: "2025-06-07", clockIn: "08:18", clockOut: "17:15" },
+  //   { date: "2025-06-08", clockIn: "08:11", clockOut: "17:22" },
+  //   { date: "2025-06-09", clockIn: "08:14", clockOut: "17:09" },
   { date: "2025-06-10", clockIn: "08:09", clockOut: "17:17" },
   { date: "2025-06-11", clockIn: "08:13", clockOut: "17:11" },
   { date: "2025-06-12", clockIn: "08:16", clockOut: "17:19" },
   { date: "2025-06-13", clockIn: "08:07", clockOut: "17:23" },
   { date: "2025-06-14", clockIn: "08:19", clockOut: "17:08" },
   { date: "2025-06-15", clockIn: "08:06", clockOut: "17:16" },
-  //   { date: "2025-06-16", clockIn: "08:17", clockOut: "17:21" },
-  //   { date: "2025-06-17", clockIn: "08:10", clockOut: "17:13" },
+  //   { date: "2025-06-16", clockIn: "08:17", clockOut: "17:21" },
+  //   { date: "2025-06-17", clockIn: "08:10", clockOut: "17:13" },
   { date: "2025-06-18", clockIn: "08:12", clockOut: "17:14" },
   { date: "2025-06-19", clockIn: "08:14", clockOut: "17:18" },
   { date: "2025-06-20", clockIn: "08:11", clockOut: "17:20" },
@@ -68,8 +66,8 @@ const workHours = [
   { date: "2025-06-22", clockIn: "08:13", clockOut: "17:22" },
   { date: "2025-06-23", clockIn: "08:16", clockOut: "17:09" },
   { date: "2025-06-24", clockIn: "08:08", clockOut: "17:17" },
-  //   { date: "2025-06-25", clockIn: "08:18", clockOut: "17:12" },
-  //   { date: "2025-06-26", clockIn: "08:09", clockOut: "17:19" },
+  //   { date: "2025-06-25", clockIn: "08:18", clockOut: "17:12" },
+  //   { date: "2025-06-26", clockIn: "08:09", clockOut: "17:19" },
   { date: "2025-06-27", clockIn: "08:20", clockOut: "17:11" },
   { date: "2025-06-28", clockIn: "08:07", clockOut: "17:16" },
   { date: "2025-06-29", clockIn: "08:19", clockOut: "17:10" },
@@ -308,15 +306,18 @@ export default function DashboardPage() {
   const [selectedYear, setSelectedYear] = useState<string | undefined>(
     now.getFullYear().toString()
   );
-
   const [isLoading, setIsLoading] = useState(true);
 
   // Simulasi untuk mengubah isLoading menjadi FALSE setelah beberapa waktu (SIMULASI SAJA SEBELUM FETCHING)
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false); // Setelah 1.5 detik, ubah isLoading jadi FALSE
-    }, 3000); // 1500 milidetik = 1.5 detik
-    return () => clearTimeout(timer);
+    }, 1500);
+
+
+    return () => {
+      clearTimeout(timer);
+    };
   }, []);
 
   // Filter data berdasarkan bulan dan tahun yang dipilih
@@ -352,7 +353,8 @@ export default function DashboardPage() {
   return (
     <Sidebar title="Dashboard">
       <div className="flex flex-col gap-[30px]">
-        <div className="w-[229px]">
+        <div className="w-[229px]" id="period-selection">
+          {" "}
           {isLoading ? (
             <Skeleton className="h-[40px] w-[229px] rounded-md" />
           ) : (
@@ -451,7 +453,8 @@ export default function DashboardPage() {
             </Popover>
           )}
         </div>
-        <div className="grid grid-cols-4 gap-[30px]">
+        <div className="grid grid-cols-4 gap-[30px]" id="dashboard-cards">
+          {" "}
           {isLoading ? (
             <>
               <Skeleton className="h-[135px] w-full rounded-lg" />
@@ -551,11 +554,14 @@ export default function DashboardPage() {
         {isLoading ? (
           <Skeleton className="h-[385px] w-full rounded-lg" />
         ) : (
-          <WorkHoursChart
-            data={filteredData}
-            selectedMonth={selectedMonth}
-            selectedYear={selectedYear}
-          />
+          <div id="work-hours-chart">
+            {" "}
+            <WorkHoursChart
+              data={filteredData}
+              selectedMonth={selectedMonth}
+              selectedYear={selectedYear}
+            />
+          </div>
         )}
         <div className="grid grid-cols-2 gap-[30px]">
           {isLoading ? (
@@ -567,7 +573,8 @@ export default function DashboardPage() {
             </>
           ) : (
             <>
-              <Card className="">
+              <Card className="" id="attendance-summary">
+                {" "}
                 <CardHeader className="items-center pb-0 gap-3">
                   <div className="">
                     <CardTitle className="text-lg">
@@ -594,7 +601,11 @@ export default function DashboardPage() {
                   />
                 </div>
               </Card>
-              <Card className="px-6 gap-[10px] flex flex-col">
+              <Card
+                className="px-6 gap-[10px] flex flex-col"
+                id="leave-summary"
+              >
+                {" "}
                 <CardHeader className="items-center pb-0 gap-3 px-0">
                   <div className="">
                     <CardTitle className="text-lg">Leave Summary</CardTitle>
@@ -631,15 +642,23 @@ export default function DashboardPage() {
               </Card>
 
               {/* Expected Monthly Salary Card extracted to component */}
-              <ExpectedSalaryCard
-                salary={salary}
-                enrichedSalary={enrichedSalary}
-                selectedMonth={selectedMonth}
-                selectedYear={selectedYear}
-                monthNames={monthNames}
-                chartConfig={chartConfig}
-              />
-              <Card className="px-6 gap-[10px] flex flex-col">
+              <div id="expected-salary">
+                {" "}
+                {/* Add id around the component */}
+                <ExpectedSalaryCard
+                  salary={salary}
+                  enrichedSalary={enrichedSalary}
+                  selectedMonth={selectedMonth}
+                  selectedYear={selectedYear}
+                  monthNames={monthNames}
+                  chartConfig={chartConfig}
+                />
+              </div>
+              <Card
+                className="px-6 gap-[10px] flex flex-col"
+                id="overtime-summary"
+              >
+                {" "}
                 <CardHeader className="items-center pb-0 gap-3 px-0">
                   <div className="">
                     <CardTitle className="text-lg">Overtime Summary</CardTitle>
