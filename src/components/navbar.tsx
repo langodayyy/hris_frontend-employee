@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Button } from "./ui/button";
 import SearchBar from "./ui/search";
 import {
@@ -41,34 +42,28 @@ export default function Navbar({ title, avatarImage, userName }: NavbarProps) {
   // array notification sample
   const notifications = [
     {
-      user: "Silfi Nazarina",
-      message: "Has sent a checkclock request",
+      user_id: 3,
       type: "checkclock",
-      time: "1 minute ago",
+      time: "5 minutes ago",
+      approval_status: "approved",
     },
     {
-      user: "Silfi Nazarina",
-      message: "Has sent a checkclock request",
+      user_id: 3,
       type: "checkclock",
-      time: "1 minute ago",
+      time: "10 minutes ago",
+      approval_status: "rejected",
     },
     {
-      user: "Silfi Nazarina",
-      message: "Has sent a checkclock request",
-      type: "checkclock",
-      time: "1 minute ago",
+      user_id: 3,
+      type: "overtime",
+      time: "1 hour ago",
+      approval_status: "approved",
     },
     {
-      user: "Silfi Nazarina",
-      message: "Has sent a checkclock request",
-      type: "checkclock",
-      time: "1 minute ago",
-    },
-    {
-      user: "Silfi Nazarina",
-      message: "Has sent a checkclock request",
-      type: "checkclock",
-      time: "1 minute ago",
+      user_id: 3,
+      type: "overtime",
+      time: "2 hours ago",
+      approval_status: "rejected",
     },
   ];
 
@@ -122,205 +117,44 @@ export default function Navbar({ title, avatarImage, userName }: NavbarProps) {
               </div>
             </div>
             {/* notification dropdown */}
-            <DropdownMenuContent className="absolute w-[300px] p-0 top-3 right-0">
+            <DropdownMenuContent className="absolute w-[300px] p-0 top-3 right-0 max-h-[480px] overflow-y-auto">
               <DropdownMenuLabel className="bg-neutral-50 text-neutral-900 h-[42px] px-4 py-[10px] text-base items-center">
                 Notification
               </DropdownMenuLabel>
               <DropdownMenuSeparator className="m-0" />
-              <DropdownMenuItem className="h-[91px]">
-                <div className="flex items-center flex-row gap-[10px] w-auto h-[91px] py-3">
-                  <div className="w-13">
-                    <div className="relative flex items-center justify-center w-full h-10 bg-gray-400 rounded-full">
-                      {avatarImage ? (
-                        <img
-                          src={avatarImage}
-                          alt="Avatar"
-                          className="w-full h-full object-cover rounded-full"
-                        />
-                      ) : (
-                        <span className="text-white text-sm font-medium">
-                          {getInitials(userName)}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-[2px] h-auto w-full">
-                    <div className="flex flex-col">
-                      <span className="text-base font-medium text-neutral-950">
-                        {userName}
-                      </span>
-                      <span className="text-sm text-neutral-500">
-                        Has sent a checkclock request
-                      </span>
-                    </div>
-                    <span className="text-sm text-info-500">1 minute ago</span>
-                  </div>
-                </div>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="h-[91px]">
-                <div className="flex items-center flex-row gap-2.5 w-auto h-[91px] py-3">
-                  <div className="flex -space-x-7 overflow-hidden">
-                    <div className="relative flex items-center justify-center w-13 h-10 bg-gray-400 rounded-full ring-2 ring-white">
-                      {avatarImage ? (
-                        <img
-                          src={avatarImage}
-                          alt="Avatar"
-                          className="w-full h-full object-cover rounded-full"
-                        />
-                      ) : (
-                        <span className="text-white text-sm font-medium">
-                          {getInitials(userName)}
-                        </span>
-                      )}
-                    </div>
-                    <div className="relative flex items-center justify-center w-13 h-10 bg-gray-400 rounded-full ring-2 ring-white">
-                      {avatarImage ? (
-                        <img
-                          src={avatarImage}
-                          alt="Avatar"
-                          className="w-full h-full object-cover rounded-full"
-                        />
-                      ) : (
-                        <span className="text-white text-sm font-medium">
-                          {getInitials(userName)}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-[2px] h-auto w-full">
-                    <div className="flex flex-col">
-                      <span className="text-base font-medium text-neutral-950">
-                        {userName} + 10 others
-                      </span>
-                      <span className="text-sm text-neutral-500">
-                        Has sent a checkclock request
-                      </span>
-                    </div>
-                    <span className="text-sm text-info-500">1 minute ago</span>
-                  </div>
-                </div>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="h-[91px]">
-                <div className="flex items-center flex-row gap-2.5 w-auto h-[91px] py-3">
-                  <div className="w-13">
-                    <div className="relative flex items-center justify-center w-full h-10 bg-gray-400 rounded-full">
-                      {avatarImage ? (
-                        <img
-                          src={avatarImage}
-                          alt="Avatar"
-                          className="w-full h-full object-cover rounded-full"
-                        />
-                      ) : (
-                        <span className="text-white text-sm font-medium">
-                          {getInitials(userName)}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-[2px] h-auto w-full">
-                    <div className="flex flex-col">
-                      <span className="text-base font-medium text-neutral-950">
-                        {userName}
-                      </span>
-                      <span className="text-sm text-neutral-500">
-                        Has sent a overtime request
-                      </span>
-                    </div>
-                    <span className="text-sm text-info-500">1 minute ago</span>
-                  </div>
-                </div>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="h-[91px]">
-                <div className="flex items-center flex-row gap-2.5 w-auto h-[91px] py-3">
-                  <div className="flex -space-x-6 overflow-hidden">
-                    <div className="relative flex items-center justify-center w-13 h-10 bg-gray-400 rounded-full ring-2 ring-white">
-                      {avatarImage ? (
-                        <img
-                          src={avatarImage}
-                          alt="Avatar"
-                          className="w-full h-full object-cover rounded-full"
-                        />
-                      ) : (
-                        <span className="text-white text-sm font-medium">
-                          {getInitials(userName)}
-                        </span>
-                      )}
-                    </div>
-                    <div className="relative flex items-center justify-center w-13 h-10 bg-gray-400 rounded-full ring-2 ring-white">
-                      {avatarImage ? (
-                        <img
-                          src={avatarImage}
-                          alt="Avatar"
-                          className="w-full h-full object-cover rounded-full"
-                        />
-                      ) : (
-                        <span className="text-white text-sm font-medium">
-                          {getInitials(userName)}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-[2px] h-auto w-full">
-                    <div className="flex flex-col">
-                      <span className="text-base font-medium text-neutral-950">
-                        {userName} + 10 others
-                      </span>
-                      <span className="text-sm text-neutral-500">
-                        Has sent a overtime request
-                      </span>
-                    </div>
-                    <span className="text-sm text-info-500">1 minute ago</span>
-                  </div>
-                </div>
-              </DropdownMenuItem>
-              <DropdownMenuLabel className="bg-neutral-50 text-neutral-900 h-[42px] px-[10px] py-[10px] text-base items-center">
-                <div className="flex justify-center gap-[10px]">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                  >
-                    <g clipPath="url(#clip0_609_3815)">
-                      <path
-                        d="M23.2709 9.41885C21.7199 6.89285 18.1919 2.65485 11.9999 2.65485C5.80787 2.65485 2.27987 6.89285 0.728868 9.41885C0.249396 10.1944 -0.00457764 11.0881 -0.00457764 11.9998C-0.00457764 12.9116 0.249396 13.8053 0.728868 14.5808C2.27987 17.1068 5.80787 21.3448 11.9999 21.3448C18.1919 21.3448 21.7199 17.1068 23.2709 14.5808C23.7503 13.8053 24.0043 12.9116 24.0043 11.9998C24.0043 11.0881 23.7503 10.1944 23.2709 9.41885ZM21.5659 13.5338C20.2339 15.6998 17.2189 19.3448 11.9999 19.3448C6.78087 19.3448 3.76587 15.6998 2.43387 13.5338C2.149 13.0729 1.99812 12.5417 1.99812 11.9998C1.99812 11.458 2.149 10.9268 2.43387 10.4658C3.76587 8.29985 6.78087 4.65485 11.9999 4.65485C17.2189 4.65485 20.2339 8.29585 21.5659 10.4658C21.8507 10.9268 22.0016 11.458 22.0016 11.9998C22.0016 12.5417 21.8507 13.0729 21.5659 13.5338Z"
-                        fill="#3D3D3D"
+              {notificationCount > 0 ? (
+                notifications.map((notification, index) => (
+                  <DropdownMenuItem key={index} className="h-[91px]">
+                    <div className="flex items-center flex-row gap-[10px] w-auto h-[91px] py-3">
+                      <Image
+                        src={`/${notification.type}-${notification.approval_status}.svg`} // Corrected dynamic image source
+                        alt="status-icon"
+                        width={53}
+                        height={53}
                       />
-                      <path
-                        d="M11.9998 6.99982C11.0109 6.99982 10.0442 7.29306 9.22197 7.84247C8.39972 8.39188 7.75886 9.17277 7.38042 10.0864C7.00198 11 6.90297 12.0054 7.09589 12.9753C7.28882 13.9452 7.76502 14.8361 8.46429 15.5354C9.16355 16.2346 10.0545 16.7108 11.0244 16.9037C11.9943 17.0967 12.9996 16.9977 13.9132 16.6192C14.8269 16.2408 15.6078 15.5999 16.1572 14.7777C16.7066 13.9554 16.9998 12.9887 16.9998 11.9998C16.9982 10.6742 16.4709 9.40337 15.5336 8.46604C14.5963 7.5287 13.3254 7.0014 11.9998 6.99982ZM11.9998 14.9998C11.4065 14.9998 10.8265 14.8239 10.3331 14.4942C9.83976 14.1646 9.45524 13.696 9.22818 13.1479C9.00112 12.5997 8.94171 11.9965 9.05746 11.4145C9.17322 10.8326 9.45894 10.2981 9.8785 9.8785C10.2981 9.45894 10.8326 9.17322 11.4145 9.05746C11.9965 8.94171 12.5997 9.00112 13.1479 9.22818C13.696 9.45524 14.1646 9.83976 14.4942 10.3331C14.8239 10.8265 14.9998 11.4065 14.9998 11.9998C14.9998 12.7955 14.6837 13.5585 14.1211 14.1211C13.5585 14.6837 12.7955 14.9998 11.9998 14.9998Z"
-                        fill="#3D3D3D"
-                      />
-                    </g>
-                    <defs>
-                      <clipPath id="clip0_609_3815">
-                        <rect width="24" height="24" fill="white" />
-                      </clipPath>
-                    </defs>
-                  </svg>
-                  <a href="#">View All</a>
-                </div>
-              </DropdownMenuLabel>
+
+                      <div className="flex flex-col gap-[2px] h-auto w-full">
+                        <div className="flex flex-col">
+                          <span className="text-base font-medium text-neutral-950">
+                            HR has {notification.approval_status} your{" "}
+                            {notification.type} request
+                          </span>
+                        </div>
+                        <span className="text-sm text-info-500">
+                          {notification.time}
+                        </span>
+                      </div>
+                    </div>
+                  </DropdownMenuItem>
+                ))
+              ) : (
+                <DropdownMenuItem className="h-[50px] flex items-center justify-center text-neutral-500">
+                  No new notifications
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenuTrigger>
         </DropdownMenu>
-
-        {/* user info */}
-        {/* <div className="flex flex-row gap-3 w-auto h-auto">
-          <div className="relative flex items-center justify-center w-10 h-10 bg-gray-400 rounded-full">
-            {avatarImage ? (
-              <img src={avatarImage} alt="Avatar" className="w-full h-full object-cover rounded-full" />
-            ) : (
-              <span className="text-white text-sm font-medium">{getInitials(userName)}</span>
-            )}
-          </div>
-          <div className="flex flex-col h-auto w-auto">
-            <span className="text-base font-medium text-neutral-950">
-              {userName}
-            </span>
-            <span className="text-sm text-neutral-500">Roles User</span>
-          </div>
-        </div> */}
 
         {/* user dropdown */}
         <DropdownMenu>
