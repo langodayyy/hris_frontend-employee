@@ -32,6 +32,10 @@ import { useCKSettingData } from "@/hooks/useCheckClockData";
 import { toast } from "sonner";
 import { Spinner } from "../ui/spinner";
 
+interface AttendanceFormProps {
+  onClockInStatusChange: (clockedIn: boolean) => void;
+}
+
 const attendanceTypeOptions = [
   { label: "Clock In", value: "clockIn" },
   { label: "Annual Leave", value: "annualLeave" },
@@ -95,7 +99,7 @@ const formSchema = z
 
 type FormValues = z.infer<typeof formSchema>;
 
-const AttendanceForm: React.FC = () => {
+const AttendanceForm: React.FC<AttendanceFormProps> = ({ onClockInStatusChange }) => {
   const {
     register,
     handleSubmit,
@@ -107,6 +111,7 @@ const AttendanceForm: React.FC = () => {
     resolver: zodResolver(formSchema),
   });
 
+  const [clockedIn, setClockedIn] = useState(false);
   const [valueEmployee, setValueEmployee] = useState("");
   const [valueWorkType, setValueWorkType] = useState("");
   const [valueAttendanceType, setValueAttendanceType] = useState("");
@@ -124,8 +129,8 @@ const AttendanceForm: React.FC = () => {
 
   const { locationRule } = useCKSettingData();
 
-  // console.log(locationRule);
-  // console.log(locationRule?.latitude, locationRule?.longitude);
+  const workType = watch("workType");
+  const attendanceType = watch("attendanceType");
 
   const fieldRefs = {
     workType: useRef<HTMLDivElement>(null),
@@ -150,26 +155,28 @@ const AttendanceForm: React.FC = () => {
 
   // get user location
   useEffect(() => {
-  const getUserLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setPinLocation({ lat: latitude, lng: longitude }); // Update pinLocation state
-        },
-        (error) => {
-          console.error("Error fetching location:", error);
-          toast.error("Unable to fetch your location. Please enable location services.");
-        }
-      );
-    } else {
-      // console.error("Geolocation is not supported by this browser.");
-      toast.error("Geolocation is not supported by your browser.");
-    }
-  };
+    const getUserLocation = () => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+            setPinLocation({ lat: latitude, lng: longitude }); // Update pinLocation state
+          },
+          (error) => {
+            console.error("Error fetching location:", error);
+            toast.error(
+              "Unable to fetch your location. Please enable location services."
+            );
+          }
+        );
+      } else {
+        // console.error("Geolocation is not supported by this browser.");
+        toast.error("Geolocation is not supported by your browser.");
+      }
+    };
 
-  getUserLocation();
-}, []);
+    getUserLocation();
+  }, []);
 
   useEffect(() => {
     if (valueEmployee !== "")
@@ -204,6 +211,48 @@ const AttendanceForm: React.FC = () => {
     }
   }, [contextErrors]);
 
+  // check clock in status
+  useEffect(() => {
+    const checkClockInStatus = async () => {
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/check-clockin`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${Cookies.get("token-employee")}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to check clock-in status");
+        }
+
+        const data = await response.json();
+
+        if (data.clockedIn) {
+          setClockedIn(true);
+          onClockInStatusChange(true);
+          // Set attendance type and work type if already clocked in
+          setValue("attendanceType", "clockOut", {
+            shouldValidate: true,
+          });
+          setValue("workType", data.workType, { shouldValidate: true });
+          toast.info("You have already clocked in for today.");
+        } else {
+          setClockedIn(false);
+          onClockInStatusChange(false);
+        }
+      } catch (error) {
+        console.error("Error checking clock-in status:", error);
+      }
+    };
+
+    checkClockInStatus();
+  }, [setValue]);
+
   // server time extract
   useEffect(() => {
     const fetchServerTime = async () => {
@@ -232,23 +281,23 @@ const AttendanceForm: React.FC = () => {
     fetchServerTime();
   }, [setValue]);
 
-
   const onSubmit = async (data: FormValues) => {
     setIsLoading(true);
-    console.log("time",data.check_clock_time)
+    console.log("time", data.check_clock_time);
     try {
       const formData = new FormData();
 
       const attendanceTypeMapping: Record<string, string> = {
         clockIn: "Present",
+        clockOut: "Present",
         annualLeave: "Annual Leave",
         sickLeave: "Sick Leave",
       };
 
       formData.append("ck_setting_name", data.workType);
-      formData.append("status", attendanceTypeMapping[data.attendanceType]); 
+      formData.append("status", attendanceTypeMapping[data.attendanceType]);
       formData.append("check_clock_time", data.check_clock_time);
-      
+
       formData.append(
         "check_clock_type",
         valueAttendanceType === "clockIn" ? "in" : "out"
@@ -267,6 +316,7 @@ const AttendanceForm: React.FC = () => {
         formData.append("end_date", endDate);
       }
 
+      console.log(pinLocation?.lat, pinLocation?.lng);
       if (pinLocation) {
         formData.append("latitude", pinLocation.lat.toString());
         formData.append("longitude", pinLocation.lng.toString());
@@ -281,7 +331,9 @@ const AttendanceForm: React.FC = () => {
         formData.append("evidence", uploadedFile);
       }
 
-      console.log(formData);
+      for (const [key, value] of formData.entries()) {
+        console.log(`${key}: ${value}`);
+      }
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/check-clock`,
@@ -301,7 +353,7 @@ const AttendanceForm: React.FC = () => {
       }
 
       const result = await response.json();
-      setSuccess({ attendance: ["Attendance submitted successfully!"] });
+      setSuccess(result.message);
       router.push("/checkclock");
     } catch (error) {
       console.error("Submit error:", error);
@@ -323,13 +375,18 @@ const AttendanceForm: React.FC = () => {
             </span>
           )}
           <Label>Work Type</Label>
-          {valueEmployee === "" ? (
+          {clockedIn ? (
+            <Input
+              className="w-full bg-gray-100 cursor-not-allowed"
+              value={workType}
+              readOnly
+            />
+          ) : (
             <Select
-              value={valueWorkType}
-              onValueChange={(val) => {
-                setValueWorkType(val);
-                setValue("workType", val, { shouldValidate: true });
-              }}
+              value={workType}
+              onValueChange={(val) =>
+                setValue("workType", val, { shouldValidate: true })
+              }
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select work type" />
@@ -342,12 +399,6 @@ const AttendanceForm: React.FC = () => {
                 ))}
               </SelectContent>
             </Select>
-          ) : (
-            <Input
-              className="w-full bg-gray-100 cursor-not-allowed"
-              value="WFO"
-              readOnly
-            />
           )}
           {errors.workType && (
             <span className="text-red-500 text-sm font-semibold">
@@ -358,7 +409,7 @@ const AttendanceForm: React.FC = () => {
 
         <div className="flex flex-col gap-2" ref={fieldRefs.attendanceType}>
           <Label>Attendance Type</Label>
-          {valueEmployee === "" ? (
+          {attendanceType !== "clockOut" ? (
             <Select
               value={valueAttendanceType}
               onValueChange={(val) => {
@@ -432,7 +483,7 @@ const AttendanceForm: React.FC = () => {
           </div>
         )}
 
-        {(valueWorkType === "WFA" ||
+        {(workType === "WFA" ||
           valueAttendanceType === "annualLeave" ||
           valueAttendanceType === "sickLeave") && (
           <div

@@ -31,7 +31,11 @@ export default function AddCheckclockPage() {
     }
   }, [success]);
 
-  const [valueEmployee, setValueEmployee] = useState("");
+  const [clockedIn, setClockedIn] = useState(false);
+
+  const handleClockInStatusChange = (status: boolean) => {
+    setClockedIn(status); // Update the clockedIn state in the parent
+  };
 
   return (
     <Sidebar title="Checkclock">
@@ -45,10 +49,10 @@ export default function AddCheckclockPage() {
         <CardContent className="flex flex-col gap-[15px]">
           <div className="px-[10px]">
             <h1 className="text-lg font-medium ">
-              {valueEmployee === "" ? "Add Clock In" : "Add Clock Out"}
+              {!clockedIn ? "Add Clock In" : "Add Clock Out"}
             </h1>
           </div>
-          <AttendanceForm />
+          <AttendanceForm onClockInStatusChange={handleClockInStatusChange} />
         </CardContent>
       </Card>
     </Sidebar>
