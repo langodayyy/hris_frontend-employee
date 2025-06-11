@@ -244,6 +244,7 @@ export default function RootLayout({
             continuous={true}
             showProgress
             showSkipButton
+            disableScrolling
             styles={{
               options: {
                 arrowColor: "#fff",

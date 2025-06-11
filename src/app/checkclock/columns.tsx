@@ -21,7 +21,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import RejectionReasonDialog from "@/components/ui/reject-reason-dialog";
 
-
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
 export type CheckclockOverview = {
@@ -189,13 +188,14 @@ export const columns: ColumnDef<CheckclockOverview>[] = [
         | string
         | undefined;
       if (!approvalStatus) {
-        return null;
+        return <span className="flex justify-center">-</span>;
+      } else {
+        return (
+          <ApprovalStatusBadge
+            status={approvalStatus as "Approved" | "Pending" | "Rejected"}
+          />
+        );
       }
-      return (
-        <ApprovalStatusBadge
-          status={approvalStatus as "Approved" | "Pending" | "Rejected"}
-        />
-      );
     },
     filterFn: (row, columnId, filterValue) => {
       if (Array.isArray(filterValue)) {
@@ -219,15 +219,20 @@ export const columns: ColumnDef<CheckclockOverview>[] = [
       const showButton =
         approvalStatus === "Rejected" ||
         (status === "Absent" && clockIn && clockIn !== "--:--");
-      if (!showButton) return null;
-      return (
-         <RejectionReasonDialog
-                  reasonText="See Reason"
-                  dialogTitle="Why it was rejected"
-                  dialogDescription="During working hours you are not in the office"
-                  buttonLabel="View"
-                />
-      );
+      if (!showButton) {
+        return(
+          <span className="flex justify-center">-</span>
+        );
+      } else {
+        return (
+          <RejectionReasonDialog
+            reasonText="See Reason"
+            dialogTitle="Why it was rejected"
+            dialogDescription="During working hours you are not in the office"
+            buttonLabel="View"
+          />
+        );
+      }
     },
   },
 ];
