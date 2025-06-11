@@ -33,6 +33,8 @@ export function useCKSettingData() {
     }
     : null;
     
+    // console.log(locationRule)
+    
   return {
     checkClockData,
     locationRule,

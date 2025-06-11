@@ -11,6 +11,7 @@ import { Card } from "@/components/ui/card";
 import { DateRange } from "react-day-picker";
 import MapBoxMap from "@/components/ui/map";
 import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
 import {
   Select,
   SelectContent,
@@ -28,6 +29,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { format, set } from "date-fns";
 import { FileUploader } from "../ui/fileUploader";
 import { useCKSettingData } from "@/hooks/useCheckClockData";
+import { toast } from "sonner";
+import { Spinner } from "../ui/spinner";
 
 const attendanceTypeOptions = [
   { label: "Clock In", value: "clockIn" },
@@ -36,8 +39,8 @@ const attendanceTypeOptions = [
 ];
 
 const workTypeOptions = [
-  { label: "WFO", value: "wfo" },
-  { label: "WFA", value: "wfa" },
+  { label: "WFO", value: "WFO" },
+  { label: "WFA", value: "WFA" },
 ];
 
 const formSchema = z
@@ -48,21 +51,21 @@ const formSchema = z
     attendanceType: z
       .string({ required_error: "Please choose your attendance type." })
       .min(1, "Attendance Type is required."),
-    date: z.string({ required_error: "Please select a valid date range." }),
+    date: z
+      .string({ required_error: "Please select a valid date range." })
+      .optional(),
     latitude: z.string().optional(),
     longitude: z.string().optional(),
-    supportingEvidence: z.string({
-      required_error: "Please upload supporting evidence.",
-    }),
+    supportingEvidence: z
+      .string({
+        required_error: "Please upload supporting evidence.",
+      })
+      .optional(),
+    check_clock_time: z.string({ required_error: "Clock time is required." }),
   })
   .superRefine((data, ctx) => {
-    const needsEvidence =
-      data.workType === "wfa" ||
-      data.attendanceType === "anualLeave" ||
-      data.attendanceType === "sickLeave";
-
     if (
-      (data.attendanceType === "anualLeave" ||
+      (data.attendanceType === "annualLeave" ||
         data.attendanceType === "sickLeave") &&
       (!data.date || data.date.trim() === "")
     ) {
@@ -72,6 +75,11 @@ const formSchema = z
         // message: "Date is required for annual or sick leave",
       });
     }
+
+    const needsEvidence =
+      data.workType === "WFA" ||
+      data.attendanceType === "annualLeave" ||
+      data.attendanceType === "sickLeave";
 
     if (
       needsEvidence &&
@@ -95,6 +103,7 @@ const AttendanceForm: React.FC = () => {
     setValue,
     watch,
   } = useForm<FormValues>({
+    shouldUnregister: true,
     resolver: zodResolver(formSchema),
   });
 
@@ -102,11 +111,15 @@ const AttendanceForm: React.FC = () => {
   const [valueWorkType, setValueWorkType] = useState("");
   const [valueAttendanceType, setValueAttendanceType] = useState("");
   const [date, setDate] = useState<DateRange | undefined>(undefined);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const router = useRouter();
   const [pinLocation, setPinLocation] = useState<{
     lat: number;
     lng: number;
   } | null>(null);
+
+  const [isLoading, setIsLoading] = useState(false);
+
   const { errors: contextErrors, setErrors, setSuccess } = useFormContext();
 
   const { locationRule } = useCKSettingData();
@@ -135,9 +148,32 @@ const AttendanceForm: React.FC = () => {
     }
   }, [errors]);
 
+  // get user location
+  useEffect(() => {
+  const getUserLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setPinLocation({ lat: latitude, lng: longitude }); // Update pinLocation state
+        },
+        (error) => {
+          console.error("Error fetching location:", error);
+          toast.error("Unable to fetch your location. Please enable location services.");
+        }
+      );
+    } else {
+      // console.error("Geolocation is not supported by this browser.");
+      toast.error("Geolocation is not supported by your browser.");
+    }
+  };
+
+  getUserLocation();
+}, []);
+
   useEffect(() => {
     if (valueEmployee !== "")
-      setValue("workType", "wfo", { shouldValidate: true });
+      setValue("workType", "WFO", { shouldValidate: true });
   }, [valueEmployee, setValue]);
 
   useEffect(() => {
@@ -155,47 +191,137 @@ const AttendanceForm: React.FC = () => {
     }
   }, [date, setValue]);
 
-  const handlePinReady = (lat: number, lng: number) => {
-    setPinLocation({ lat, lng });
-  };
+  useEffect(() => {
+    if (contextErrors && Object.keys(contextErrors).length > 0) {
+      Object.entries(contextErrors).forEach(([field, messages]) => {
+        if (Array.isArray(messages)) {
+          messages.forEach((message) => toast.error(`${message}`));
+        } else {
+          toast.error(`${messages}`);
+        }
+      });
+      setErrors({});
+    }
+  }, [contextErrors]);
 
-  // const handleSave = () => {
-  //   console.log("Data berhasil disimpan!");
-  //   setSuccess({ attendance: ["Attendance submitted successfully!"] });
-  //   router.push("/checkclock");
-  // };
+  // server time extract
+  useEffect(() => {
+    const fetchServerTime = async () => {
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/server-time`
+        );
+        if (!response.ok) {
+          throw new Error("Failed to fetch server time");
+        }
+        const { serverTime } = await response.json();
+
+        // Extract only the time portion (HH:mm) from the server time
+        const time = new Date(serverTime).toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false, // Use 24-hour format
+        });
+
+        setValue("check_clock_time", time); // Assign only the time
+      } catch (error) {
+        console.error("Error fetching server time:", error);
+      }
+    };
+
+    fetchServerTime();
+  }, [setValue]);
+
 
   const onSubmit = async (data: FormValues) => {
+    setIsLoading(true);
+    console.log("time",data.check_clock_time)
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/check-clock`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
+      const formData = new FormData();
+
+      const attendanceTypeMapping: Record<string, string> = {
+        clockIn: "Present",
+        annualLeave: "Annual Leave",
+        sickLeave: "Sick Leave",
+      };
+
+      formData.append("ck_setting_name", data.workType);
+      formData.append("status", attendanceTypeMapping[data.attendanceType]); 
+      formData.append("check_clock_time", data.check_clock_time);
+      
+      formData.append(
+        "check_clock_type",
+        valueAttendanceType === "clockIn" ? "in" : "out"
+      );
+
+      const today = format(new Date(), "yyyy-MM-dd");
+      formData.append("check_clock_date", today);
+
+      if (
+        (data.attendanceType === "annualLeave" ||
+          data.attendanceType === "sickLeave") &&
+        data.date
+      ) {
+        const [startDate, endDate] = data.date.split(" - ");
+        formData.append("start_date", startDate); // Add start_date
+        formData.append("end_date", endDate);
+      }
+
+      if (pinLocation) {
+        formData.append("latitude", pinLocation.lat.toString());
+        formData.append("longitude", pinLocation.lng.toString());
+      }
+
+      if (
+        (data.workType === "WFA" ||
+          data.attendanceType === "annualLeave" ||
+          data.attendanceType === "sickLeave") &&
+        uploadedFile
+      ) {
+        formData.append("evidence", uploadedFile);
+      }
+
+      console.log(formData);
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/check-clock`,
+        {
+          method: "POST",
+          body: formData,
+          headers: {
+            Authorization: `Bearer ${Cookies.get("token-employee")}`,
+          },
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
-        setErrors({
-          attendance: [errorData.message || "Failed to submit form."],
-        });
+        setErrors(errorData.errors || "Failed to submit form.");
         return;
       }
 
       const result = await response.json();
       setSuccess({ attendance: ["Attendance submitted successfully!"] });
-      router.push("/checkclock"); // Navigate after success
+      router.push("/checkclock");
     } catch (error) {
       console.error("Submit error:", error);
       setErrors({ attendance: ["Something went wrong while submitting."] });
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  // console.log("zod", errors);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <Card className="w-full p-5 gap-6 flex flex-col">
         <div className="flex flex-col gap-2" ref={fieldRefs.workType}>
+          {errors.check_clock_time && (
+            <span className="text-red-500 text-sm font-semibold">
+              {errors.check_clock_time?.message}
+            </span>
+          )}
           <Label>Work Type</Label>
           {valueEmployee === "" ? (
             <Select
@@ -265,7 +391,7 @@ const AttendanceForm: React.FC = () => {
           )}
         </div>
 
-        {(valueAttendanceType === "anualLeave" ||
+        {(valueAttendanceType === "annualLeave" ||
           valueAttendanceType === "sickLeave") && (
           <div className="flex flex-col gap-2" ref={fieldRefs.date}>
             <Label>Date</Label>
@@ -306,8 +432,8 @@ const AttendanceForm: React.FC = () => {
           </div>
         )}
 
-        {(valueWorkType === "wfa" ||
-          valueAttendanceType === "anualLeave" ||
+        {(valueWorkType === "WFA" ||
+          valueAttendanceType === "annualLeave" ||
           valueAttendanceType === "sickLeave") && (
           <div
             className="flex flex-col gap-2"
@@ -318,6 +444,7 @@ const AttendanceForm: React.FC = () => {
               onDrop={(files) => {
                 const file = files[0];
                 if (file) {
+                  setUploadedFile(file);
                   setValue("supportingEvidence", file.name, {
                     shouldValidate: true,
                   });
@@ -334,7 +461,7 @@ const AttendanceForm: React.FC = () => {
           </div>
         )}
 
-        {valueAttendanceType !== "anualLeave" &&
+        {valueAttendanceType !== "annualLeave" &&
           valueAttendanceType !== "sickLeave" && (
             <div className="w-full min-h-[400px] flex flex-col gap-2">
               <MapBoxMap
@@ -352,11 +479,8 @@ const AttendanceForm: React.FC = () => {
           </Button>
         </div>
         <div className="w-[93px]">
-          <Button
-            type="submit"
-            // onClick={handleSave}
-          >
-            Submit
+          <Button type="submit" disabled={isLoading}>
+            {isLoading ? <Spinner size={"small"} /> : "Submit"}
           </Button>
         </div>
       </div>

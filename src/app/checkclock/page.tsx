@@ -10,6 +10,7 @@ import { Toaster, toast } from "sonner";
 import { CheckclockResponse } from "../../types/checkclock";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCKSettingData } from "@/hooks/useCheckClockData";
+import { format } from "date-fns";
 // import Cookies from "js-cookie";
 
 export default function CheckclockOverviewPage() {
@@ -32,13 +33,7 @@ export default function CheckclockOverviewPage() {
 
           return {
             id: Number(item.data_id),
-            date: item.date,
-              // item.absent_start_date && item.absent_end_date
-              //   ? {
-              //       startDate: item.absent_start_date,
-              //       endDate: item.absent_end_date,
-              //     }
-              //   : item.date,
+            date: item.date, // ← this is the correct date to filter on
             clockIn: item.clock_in || "--:--",
             clockOut: item.clock_out || "--:--",
             workType: item.work_type,
@@ -56,42 +51,24 @@ export default function CheckclockOverviewPage() {
     }
   }, [checkClockData]);
 
-  const handleCalendarChange = (selectedDate: Date | undefined) => {
-    setDate(selectedDate);
 
-    if (!selectedDate) {
-      setData(allData);
-      return;
-    }
+const handleCalendarChange = (selectedDate: Date | undefined) => {
+  setDate(selectedDate);
 
-    const selectedStr = selectedDate.toISOString().slice(0, 10); // 'YYYY-MM-DD'
+  if (!selectedDate) {
+    setData(allData);
+    return;
+  }
 
-    const filtered = allData.filter((item) => {
-      const itemDate = item.date;
+  // Use format to prevent timezone shift issues
+  const selectedStr = format(selectedDate, "yyyy-MM-dd");
 
-      if (!itemDate) return false;
+  // Filter only by direct string date
+  const filtered = allData.filter((item) => item.date === selectedStr);
 
-      // Case 1: Single string date
-      if (typeof itemDate === "string") {
-        return itemDate === selectedStr;
-      }
+  setData(filtered);
+};
 
-      // Case 2: Range object
-      if (
-        typeof itemDate === "object" &&
-        "startDate" in itemDate &&
-        "endDate" in itemDate
-      ) {
-        const { startDate, endDate } = itemDate;
-
-        return selectedStr >= startDate && selectedStr <= endDate;
-      }
-
-      return false;
-    });
-
-    setData(filtered);
-  };
 
   if (loading) {
     return (
