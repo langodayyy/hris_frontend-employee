@@ -19,15 +19,11 @@ const fetcher = (url: string) => fetch(url, {
 
 export function useCKSettingData() {
   const { data, error, isLoading, mutate } = useSWR(
-    `${process.env.NEXT_PUBLIC_API_URL}/check-clocks`,
+    `${process.env.NEXT_PUBLIC_API_URL}/check-clock`,
     fetcher,
   );
 
-  console.log(data);
-
   const checkClockData = data?.check_clock_data ?? null;
-
-  console.log("cc sep",checkClockData)
   const locationRule = data?.location_rule?.[0]
   ? {
       data_id: data.location_rule[0].data_id || 0,
@@ -37,7 +33,6 @@ export function useCKSettingData() {
     }
     : null;
     
-    console.log("loc",locationRule)
   return {
     checkClockData,
     locationRule,

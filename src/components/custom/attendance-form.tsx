@@ -31,7 +31,7 @@ import { useCKSettingData } from "@/hooks/useCheckClockData";
 
 const attendanceTypeOptions = [
   { label: "Clock In", value: "clockIn" },
-  { label: "Anual Leave", value: "anualLeave" },
+  { label: "Annual Leave", value: "annualLeave" },
   { label: "Sick Leave", value: "sickLeave" },
 ];
 
@@ -107,12 +107,12 @@ const AttendanceForm: React.FC = () => {
     lat: number;
     lng: number;
   } | null>(null);
-  const { setErrors, setSuccess } = useFormContext();
+  const { errors: contextErrors, setErrors, setSuccess } = useFormContext();
 
-  const {locationRule} = useCKSettingData();
+  const { locationRule } = useCKSettingData();
 
-  console.log(locationRule);
-  console.log(locationRule?.latitude, locationRule?.longitude);
+  // console.log(locationRule);
+  // console.log(locationRule?.latitude, locationRule?.longitude);
 
   const fieldRefs = {
     workType: useRef<HTMLDivElement>(null),
@@ -165,10 +165,31 @@ const AttendanceForm: React.FC = () => {
   //   router.push("/checkclock");
   // };
 
-  const onSubmit = (data: FormValues) => {
-    console.log("Form submitted successfully:", data);
-    setSuccess({ attendance: ["Attendance submitted successfully!"] });
-    // setSuccess({ attendance: ["Attendance submitted successfully!"] });
+  const onSubmit = async (data: FormValues) => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/check-clock`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        setErrors({
+          attendance: [errorData.message || "Failed to submit form."],
+        });
+        return;
+      }
+
+      const result = await response.json();
+      setSuccess({ attendance: ["Attendance submitted successfully!"] });
+      router.push("/checkclock"); // Navigate after success
+    } catch (error) {
+      console.error("Submit error:", error);
+      setErrors({ attendance: ["Something went wrong while submitting."] });
+    }
   };
 
   return (
@@ -316,8 +337,10 @@ const AttendanceForm: React.FC = () => {
         {valueAttendanceType !== "anualLeave" &&
           valueAttendanceType !== "sickLeave" && (
             <div className="w-full min-h-[400px] flex flex-col gap-2">
-              <MapBoxMap officeLat={locationRule?.latitude} officeLng={locationRule?.longitude} />
-            
+              <MapBoxMap
+                officeLat={locationRule?.latitude}
+                officeLng={locationRule?.longitude}
+              />
             </div>
           )}
       </Card>
@@ -329,8 +352,9 @@ const AttendanceForm: React.FC = () => {
           </Button>
         </div>
         <div className="w-[93px]">
-          <Button type="submit" 
-          // onClick={handleSave}
+          <Button
+            type="submit"
+            // onClick={handleSave}
           >
             Submit
           </Button>
