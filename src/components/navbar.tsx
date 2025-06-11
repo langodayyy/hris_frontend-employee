@@ -29,8 +29,14 @@ export default function Navbar({ title, avatarImage, userName }: NavbarProps) {
   };
 
   //sugestion searchbar
-  const suggestion = ["Dashboard", "Profile", "Settings", "Logout"];
-  const result = ["Article 1", "Product A", "Blog Post", "Item XYZ"];
+  const result = [
+    { label: "Dashboard", path: "/dashboard" },
+    { label: "Checkclock", path: "/checkclock" },
+    { label: "Add Checkclock", path: "/checkclock/add" },
+    { label: "Overtime", path: "/overtime" },
+    { label: "Add Overtime", path: "/overtime/add" },
+    { label: "Profile", path: "/profile" },
+  ];
 
   // array notification sample
   const notifications = [
@@ -76,7 +82,7 @@ export default function Navbar({ title, avatarImage, userName }: NavbarProps) {
         </a>
       </div>
       <div className="flex flex-row items-center justify-center w-full h-[36px] gap-[12px] relative">
-        <SearchBar suggestion={suggestion} results={result} />
+        <SearchBar results={result} />
       </div>
 
       {/* notification */}

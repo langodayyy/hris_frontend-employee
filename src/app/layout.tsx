@@ -89,50 +89,42 @@ const menuSteps = {
       content:
         "These cards provide a quick overview of key metrics like total work hours, on-time attendance, and absences.",
       disableBeacon: true,
-      placement: "bottom" as const,
     },
     {
       target: "#work-hours-chart",
       content:
         "This chart visualizes your daily work hours for the selected period.",
       disableBeacon: true,
-      placement: "top" as const,
     },
     {
       target: "#attendance-summary",
       content:
         "View your attendance summary, including present, leave, and absent days.",
       disableBeacon: true,
-      placement: "left" as const,
+      placement: "right" as const,
     },
     {
       target: "#leave-summary",
       content:
         "Check your annual leave quota, taken days, and remaining leave.",
       disableBeacon: true,
-      placement: "top" as const,
+      placement: "left" as const,
     },
     {
       target: "#expected-salary",
       content:
         "This section shows your expected monthly salary and payroll details.",
       disableBeacon: true,
-      placement: "top" as const,
+      placement: "right" as const,
     },
     {
       target: "#overtime-summary",
       content: "Keep track of your overtime hours for the current month.",
       disableBeacon: true,
-      placement: "top" as const,
+      placement: "left" as const,
     },
   ],
   checkclock: [
-    {
-      target: "#checkclock-menu",
-      content: "Manage your checkclock recap.",
-      disableBeacon: true,
-      placement: "right" as const,
-    },
     {
       target: "#checkclock",
       content:
@@ -161,12 +153,6 @@ const menuSteps = {
     },
   ],
   overtime: [
-    {
-      target: "#overtime-menu",
-      content: "Manage your overtime recap.",
-      disableBeacon: true,
-      placement: "right" as const,
-    },
     {
       target: "#overtime",
       content:
@@ -220,7 +206,6 @@ export default function RootLayout({
   const [joyrideKey, setJoyrideKey] = useState(0);
   const [showJoyride, setShowJoyride] = useState(false);
   const pathname = usePathname();
-  const router = useRouter();
 
   const checkJoyride = (pageKey: string) => {
     const hasSeenJoyride = localStorage.getItem(`hasSeenJoyride_${pageKey}`);
@@ -234,26 +219,18 @@ export default function RootLayout({
   };
 
   useEffect(() => {
-    const pageKey = pathname.split("/")[1] || "dashboard";
-    console.log("Pathname:", pathname, "-> pageKey:", pageKey);
-    setSteps(menuSteps[pageKey as keyof typeof menuSteps] || []);
+    // Determine the page key based on the current route
+    const pageKey = pathname.replace("/", ""); // Remove leading slash and fallback to "default"
+
+    // Update steps dynamically based on the current route
+    setSteps(menuSteps[pageKey as keyof typeof menuSteps]);
+
+    // Reset Joyride visibility for the current page
     checkJoyride(pageKey);
+
+    // Update Joyride key to force re-render
     setJoyrideKey((prevKey) => prevKey + 1);
   }, [pathname]);
-
-  const handleJoyrideCallback = (data: any) => {
-    const { status } = data;
-
-    if (status === "finished" || status === "skipped") {
-      if (pathname === "/dashboard") {
-        localStorage.removeItem("hasSeenJoyride_checkclock");
-        router.push("/checkclock");
-      } else if (pathname === "/checkclock") {
-        localStorage.removeItem("hasSeenJoyride_overtime");
-        router.push("/overtime");
-      }
-    }
-  };
 
   return (
     <html lang="en">
@@ -267,7 +244,6 @@ export default function RootLayout({
             continuous={true}
             showProgress
             showSkipButton
-            callback={handleJoyrideCallback}
             styles={{
               options: {
                 arrowColor: "#fff",
