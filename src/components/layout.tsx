@@ -16,7 +16,7 @@ export default function Layout({ children, title }: LayoutProps) {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       {/* <Sidebar /> */}
-      <Navbar title={title} userName={""} subsPlan={""} activePeriod={""}/>
+      <Navbar title={title} userName={""}/>
       <main>{children}</main>
     </>
   );

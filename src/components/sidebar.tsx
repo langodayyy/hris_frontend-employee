@@ -376,8 +376,6 @@ export default function Sidebar({ children, title }: LayoutProps) {
           <Navbar
             title={title}
             userName="Silfi Nazarina jskdjhk kwdsksd"
-            subsPlan="Free"
-            activePeriod="28 May, 2025"
           />
           <main className="p-[30px] ">{children}</main>
         </div>

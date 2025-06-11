@@ -6,37 +6,9 @@ import "./globals.css";
 // import { FormProvider } from "../components/context/FormContext";
 import { FormProvider } from "@/components/context/FormContext";
 import { EditProvider } from "../components/context/EditFormContext";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Joyride from "react-joyride";
 import { usePathname } from "next/navigation";
-import { useRouter } from "next/navigation";
-// import { GoogleOAuthProvider } from "@react-oauth/google";
-// import { AuthProvider } from "@/context/AuthContext";
-// import AuthGate from "@/components/custom/authGate";
-// import {
-//   BrowserRouter,
-//   Navigate,
-//   Route,
-//   Router,
-//   Routes,
-// } from "react-router-dom";
-// import PublicRoute from "@/components/PublicRoute";
-// import Dashboard from "./dashboard/page";
-// import ProtectedRoute from "@/components/ProtectedRoute";
-// import SignIn from "./sign-in/page";
-// import SignInAsEmployee from "./sign-in/as-employee/page";
-// import CheckEmail from "./sign-in/check-email/page";
-// import ForgotPassword from "./sign-in/forgot-password/page";
-// import LinkExpired from "./sign-in/link-expired/page";
-// import SetNewPassword from "./sign-in/set-new-password/page";
-// import SuccessSetPassword from "./sign-in/success-set-password/page";
-// import SignUp from "./sign-up/page";
-// import SignupCompleteForm from "@/components/custom/signupCompletion";
-// import SignUpCompleteRegistration from "./sign-up/complete-registration/page";
-// import Employee from "./employee/page";
-// import OvertimeManagement from "./overtime/page";
-// import CheckclockOverviewPage from "./checkclock/checkclock-management/page";
-// import NotFound from "@/components/custom/NotFound";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -179,22 +151,6 @@ const menuSteps = {
       placement: "bottom" as const,
     },
   ],
-
-  // contoh selain path luar
-  // "overtime/add": [
-  //   {
-  //     target: "#overtime-add",
-  //     content: "Welcome!! Please spare a minute to learn about our page",
-  //     disableBeacon: true,
-  //   },
-  // ],
-  // "checkclock/add": [
-  //   {
-  //     target: "#checkclock-add",
-  //     content: "Welcome!! Please spare a minute to learn about our page",
-  //     disableBeacon: true,
-  //   },
-  // ],
 };
 
 export default function RootLayout({
@@ -206,6 +162,7 @@ export default function RootLayout({
   const [joyrideKey, setJoyrideKey] = useState(0);
   const [showJoyride, setShowJoyride] = useState(false);
   const pathname = usePathname();
+  const mounted = useRef(false);
 
   const checkJoyride = (pageKey: string) => {
     const hasSeenJoyride = localStorage.getItem(`hasSeenJoyride_${pageKey}`);
@@ -219,17 +176,21 @@ export default function RootLayout({
   };
 
   useEffect(() => {
-    // Determine the page key based on the current route
-    const pageKey = pathname.replace("/", ""); // Remove leading slash and fallback to "default"
+    mounted.current = true; // Set mounted to true when component mounts
 
-    // Update steps dynamically based on the current route
-    setSteps(menuSteps[pageKey as keyof typeof menuSteps]);
+    const pageKey = pathname.replace("/", "");
+    const selectedSteps = menuSteps[pageKey as keyof typeof menuSteps] || [];
 
-    // Reset Joyride visibility for the current page
-    checkJoyride(pageKey);
+    // Only update state if component is still mounted
+    if (mounted.current) {
+      setSteps(selectedSteps);
+      checkJoyride(pageKey);
+      setJoyrideKey((prevKey) => prevKey + 1);
+    }
 
-    // Update Joyride key to force re-render
-    setJoyrideKey((prevKey) => prevKey + 1);
+    return () => {
+      mounted.current = false; // Set mounted to false when component unmounts
+    };
   }, [pathname]);
 
   return (
@@ -274,74 +235,9 @@ export default function RootLayout({
           />
         )}
 
-        {/* <AuthProvider> */}
-        {/* <AuthGate> */}
         <FormProvider>
           <EditProvider>{children}</EditProvider>
         </FormProvider>
-        {/* </AuthGate> */}
-        {/* </AuthProvider> */}
-
-        {/* <AuthProvider>
-          <FormProvider>
-            <BrowserRouter>
-              <Routes>
-                <Route element={<PublicRoute />}>
-                  <Route path="/" element={<SignIn />}></Route>
-                  <Route path="/sign-in" element={<SignIn />}></Route>
-                  <Route
-                    path="/sign-in/as-employee"
-                    element={<SignInAsEmployee />}
-                  ></Route>
-                  <Route
-                    path="/sign-in/check-email"
-                    element={<CheckEmail />}
-                  ></Route>
-                  <Route
-                    path="/sign-in/forgot-password"
-                    element={<ForgotPassword />}
-                  ></Route>
-                  <Route
-                    path="/sign-in/link-expired"
-                    element={<LinkExpired />}
-                  ></Route>
-                  <Route
-                    path="/sign-in/set-new-password"
-                    element={<SetNewPassword />}
-                  ></Route>
-                  <Route
-                    path="/sign-in/success-set-password"
-                    element={<SuccessSetPassword />}
-                  ></Route>
-                  <Route path="/sign-up" element={<SignUp />}></Route>
-                  <Route
-                    path="/sign-up/complete-registration"
-                    element={<SignUpCompleteRegistration />}
-                  ></Route>
-                </Route>
-
-                <Route element={<ProtectedRoute />}>
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/employee" element={<Employee />} />
-                  <Route path="/overtime" element={<OvertimeManagement />} />
-                  <Route
-                    path="/checkclock/checkclock-management"
-                    element={<CheckclockOverviewPage />}
-                  />
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/dashboard" element={<Dashboard />} />
-                </Route>
-
-                <Route
-                  path="/"
-                  element={<Navigate to="/dashboard" replace />}
-                />
-
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </FormProvider>
-        </AuthProvider> */}
       </body>
     </html>
   );

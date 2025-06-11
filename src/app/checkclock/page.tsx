@@ -92,7 +92,7 @@ const handleCalendarChange = (selectedDate: Date | undefined) => {
   return (
     <Sidebar title="Checkclock">
        <Toaster position="bottom-right" expand={true} />
-       {isLoading ? (
+       {loading ? (
         <Skeleton className="rounded-[15px] w-full min-h-[230px] " />
       ) : (
       <div className=" bg-white rounded-[15px] p-5 flex flex-col gap-[10px]" id="checkclock">

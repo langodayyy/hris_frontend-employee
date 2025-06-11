@@ -174,7 +174,7 @@ export default function DashboardPage() {
       const month = String(monthIndex).padStart(2, '0'); // '01', '02', dst.
       const year = selectedYear || new Date().getFullYear().toString();
 
-      const res = await fetch(`http://127.0.0.1:8000/api/employee/dashboard?month=${month}&year=${year}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/employee/dashboard?month=${month}&year=${year}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
