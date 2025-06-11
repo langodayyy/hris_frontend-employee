@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Label as UILabel } from "@/components/ui/label";
 import { useState, useEffect } from "react";
 import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
-
+import Cookies from "js-cookie";
 import {
   Popover,
   PopoverContent,
@@ -41,6 +41,7 @@ import AttendancePieChart from "@/components/custom/attendance-pie-chart";
 import { TotalQuotaCard } from "@/components/ui/total-quota-card";
 import ExpectedSalaryCard from "@/components/custom/expected-salary-card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast, Toaster } from "sonner";
 
 const workHours = [
   // June 2025
@@ -190,15 +191,16 @@ function convertLogsToWorkHours(
   }));
 }
 
-const formatted = convertLogsToWorkHours(workHours);
-console.log(formatted);
+// const formatted = convertLogsToWorkHours(workHours);
 
-const attendanceData = [
-  { status: "Present", total: 275, fill: "var(--present)" },
-  { status: "annual Leave", total: 200, fill: "var(--annualLeave)" },
-  { status: "Sick Leave", total: 287, fill: "var(--sickLeave)" },
-  { status: "Absent", total: 173, fill: "var(--absent)" },
-];
+// console.log(formatted);
+
+// const attendanceData = [
+//   { status: "Present", total: 275, fill: "var(--present)" },
+//   { status: "annual Leave", total: 200, fill: "var(--annualLeave)" },
+//   { status: "Sick Leave", total: 287, fill: "var(--sickLeave)" },
+//   { status: "Absent", total: 173, fill: "var(--absent)" },
+// ];
 
 const attendance = {
   total: {
@@ -223,51 +225,45 @@ const attendance = {
 } satisfies ChartConfig;
 
 // Ubah struktur salary agar pakai date (YYYY-MM format)
-const salary = [
-  { date: "2022-01", salary: 11000000, payroll: 12000000 },
-  { date: "2022-02", salary: 12000000, payroll: 13000000 },
-  { date: "2022-03", salary: 11200000, payroll: 12200000 },
-  { date: "2022-04", salary: 15000000, payroll: 16000000 },
-  { date: "2022-05", salary: 10890000, payroll: 11890000 },
-  { date: "2022-06", salary: 11500000, payroll: 12500000 },
-  { date: "2022-07", salary: 13000000, payroll: 14000000 },
-  { date: "2022-08", salary: 12500000, payroll: 13500000 },
-  { date: "2022-09", salary: 13500000, payroll: 14500000 },
-  { date: "2022-10", salary: 14000000, payroll: 15000000 },
-  { date: "2022-11", salary: 14500000, payroll: 15500000 },
-  { date: "2022-12", salary: 15000000, payroll: 16000000 },
-  { date: "2023-01", salary: 11100000, payroll: 12100000 },
-  { date: "2023-02", salary: 12100000, payroll: 13100000 },
-  { date: "2023-03", salary: 11300000, payroll: 12300000 },
-  { date: "2023-04", salary: 15100000, payroll: 16100000 },
-  { date: "2023-05", salary: 10990000, payroll: 11990000 },
-  { date: "2023-06", salary: 11600000, payroll: 12600000 },
-  { date: "2023-07", salary: 13100000, payroll: 14100000 },
-  { date: "2023-08", salary: 12600000, payroll: 13600000 },
-  { date: "2023-09", salary: 13600000, payroll: 14600000 },
-  { date: "2023-10", salary: 14100000, payroll: 15100000 },
-  { date: "2023-11", salary: 14600000, payroll: 15600000 },
-  { date: "2023-12", salary: 15100000, payroll: 16100000 },
-  { date: "2025-01", salary: 10000000, payroll: 3000000 },
-  { date: "2025-02", salary: 10000000, payroll: 2000000 },
-  { date: "2025-03", salary: 10000000, payroll: 1000000 },
-  { date: "2025-04", salary: 10000000, payroll: 500000 },
-  { date: "2025-05", salary: 10000000, payroll: 290000 },
-  { date: "2025-06", salary: 10000000, payroll: 900000 },
-  // { date: "2025-07", salary: 13200000, payroll: 14200000 },
-  // { date: "2025-08", salary: 12700000, payroll: 13700000 },
-  // { date: "2025-09", salary: 13700000, payroll: 14700000 },
-  // { date: "2025-10", salary: 14200000, payroll: 15200000 },
-  // { date: "2025-11", salary: 14700000, payroll: 15700000 },
-  // { date: "2025-12", salary: 15200000, payroll: 16200000 },
-];
+// const salary = [
+//   { date: "2022-01", salary: 11000000, payroll: 12000000 },
+//   { date: "2022-02", salary: 12000000, payroll: 13000000 },
+//   { date: "2022-03", salary: 11200000, payroll: 12200000 },
+//   { date: "2022-04", salary: 15000000, payroll: 16000000 },
+//   { date: "2022-05", salary: 10890000, payroll: 11890000 },
+//   { date: "2022-06", salary: 11500000, payroll: 12500000 },
+//   { date: "2022-07", salary: 13000000, payroll: 14000000 },
+//   { date: "2022-08", salary: 12500000, payroll: 13500000 },
+//   { date: "2022-09", salary: 13500000, payroll: 14500000 },
+//   { date: "2022-10", salary: 14000000, payroll: 15000000 },
+//   { date: "2022-11", salary: 14500000, payroll: 15500000 },
+//   { date: "2022-12", salary: 15000000, payroll: 16000000 },
+//   { date: "2023-01", salary: 11100000, payroll: 12100000 },
+//   { date: "2023-02", salary: 12100000, payroll: 13100000 },
+//   { date: "2023-03", salary: 11300000, payroll: 12300000 },
+//   { date: "2023-04", salary: 15100000, payroll: 16100000 },
+//   { date: "2023-05", salary: 10990000, payroll: 11990000 },
+//   { date: "2023-06", salary: 11600000, payroll: 12600000 },
+//   { date: "2023-07", salary: 13100000, payroll: 14100000 },
+//   { date: "2023-08", salary: 12600000, payroll: 13600000 },
+//   { date: "2023-09", salary: 13600000, payroll: 14600000 },
+//   { date: "2023-10", salary: 14100000, payroll: 15100000 },
+//   { date: "2023-11", salary: 14600000, payroll: 15600000 },
+//   { date: "2023-12", salary: 15100000, payroll: 16100000 },
+//   { date: "2025-01", salary: 10000000, payroll: 3000000 },
+//   { date: "2025-02", salary: 10000000, payroll: 2000000 },
+//   { date: "2025-03", salary: 10000000, payroll: 1000000 },
+//   { date: "2025-04", salary: 10000000, payroll: 500000 },
+//   { date: "2025-05", salary: 10000000, payroll: 290000 },
+//   { date: "2025-06", salary: 10000000, payroll: 900000 },
+// ];
 
-// Ubah enrichedSalary agar pakai date
-const enrichedSalary = salary.map((item) => ({
-  ...item,
-  totalSalary: item.salary + item.payroll,
-}));
-console.log(enrichedSalary);
+// // Ubah enrichedSalary agar pakai date
+// const enrichedSalary = salary.map((item) => ({
+//   ...item,
+//   totalSalary: item.salary + item.payroll,
+// }));
+// console.log(enrichedSalary);
 
 const chartConfig = {
   salary: {
@@ -300,7 +296,125 @@ const monthNames = [
   "december",
 ];
 
+
 export default function DashboardPage() {
+   const [dashboardData, setDashboardData] = useState<{
+    totalWorkHour: any[],
+    totalAttendance: any[],
+    leaveSummary: any,
+    totalOnTime: any[],
+    overtimeSummary: any[],
+    monthlySalaryLastYear: any[],
+    } | null>(null);
+
+  const formatted = dashboardData?.totalWorkHour?.map(item => ({
+    date: item.date,
+    workHours: item.total_hour,
+  })) ?? [];
+  const totalMonthlyWorkHour = (dashboardData?.totalWorkHour || []).reduce((sum, item) => {
+    return sum + (item.total_hour || 0);
+  }, 0);
+
+  console.log("Total jam kerja dalam sebulan:", totalMonthlyWorkHour);
+
+  const overtime = dashboardData?.overtimeSummary?.[0];
+
+  const presentCount = dashboardData?.totalAttendance?.find((item) => item.status === "Present")?.count ?? 0;
+  const sickLeaveCount = dashboardData?.totalAttendance?.find((item) => item.status === "Sick Leave")?.count ?? 0;
+  const annualLeaveCount = dashboardData?.totalAttendance?.find((item) => item.status === "Annual Leave")?.count ?? 0;
+  const absentCount = dashboardData?.totalAttendance?.find((item) => item.status === "Absent")?.count ?? 0;
+
+  const attendanceData = [
+    { status: "Present", total: presentCount, fill: "var(--present)" },
+    { status: "annual Leave", total: annualLeaveCount, fill: "var(--annualLeave)" },
+    { status: "Sick Leave", total: sickLeaveCount, fill: "var(--sickLeave)" },
+    { status: "Absent", total: absentCount, fill: "var(--absent)" },
+  ];
+
+  const enrichedSalary = (dashboardData?.monthlySalaryLastYear || []).map((item) => {
+    const date = new Date(item.month);
+   const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+
+   return {
+      date: formattedDate,
+      salary: item.salary,
+      payroll: item.total_overtime_pay,
+      totalSalary: item.total_salary_with_overtime,
+    };
+  });
+
+  console.log(enrichedSalary);
+  const salary = enrichedSalary.map(item => ({
+    date: item.date,
+    salary: item.salary,
+    payroll: item.payroll,
+  }));
+
+
+  //  useEffect(() => {
+  //   const fetchDashboard = async () => {
+  //     try {
+  //       const token = Cookies.get('token');
+  //       const res = await fetch(`http://127.0.0.1:8000/api/employee/dashboard`, {
+  //         headers: {
+  //           Authorization: `Bearer 1|v4e5ULWVv4Yq22iux7Eeb8eakdtwRVHcH9VxgfL154f11c34`,
+  //         },
+  //       });
+
+  //       const data = await res.json();
+  //       console.log(data)
+  //       if (!res.ok) {
+  //         throw data;
+  //       }
+  //       setDashboardData({
+  //         totalWorkHour: data.totalWorkHour || [],
+  //         totalAttendance: data.totalAttendance || [],
+  //         leaveSummary: data.leaveSummary || {},
+  //         totalOnTime: data.totalOnTime || [],
+  //         overtimeSummary: data.overtimeSummary || [],
+  //         monthlySalaryLastYear: data.monthlySalaryLastYear || [],
+  //       });
+  //     } catch (err) {
+  //     let message = "Unknown error occurred";
+  //       let messagesToShow: string[] = [];
+
+  //       if (
+  //       err &&
+  //       typeof err === "object" &&
+  //       "message" in err &&
+  //       typeof (err as any).message === "string"
+  //       ) {
+  //       const backendError = err as { message: string; errors?: Record<string, string[]> };
+
+  //       if (backendError.message.toLowerCase().includes("failed to fetch")) {
+  //           message = "Unknown error occurred";
+  //       } else {
+  //           message = backendError.message;
+  //       }
+
+  //       messagesToShow = backendError.errors
+  //           ? Object.values(backendError.errors).flat()
+  //           : [message];
+  //       } else {
+  //       messagesToShow = [message]
+  //       }
+
+  //       toast.error(
+  //           <>
+  //               <p className="text-red-700 font-bold">Error</p>
+  //               {messagesToShow.map((msg, idx) => (
+  //               <div key={idx} className="text-red-700">• {msg}</div>
+  //               ))}
+  //           </>,
+  //           { duration: 30000 }
+  //       )
+  //     }
+  //   };
+  //   fetchDashboard();
+  // }, [])
+  
+  
+
   const [isOpen, setIsOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState<string | undefined>(
     monthNames[now.getMonth()]
@@ -308,6 +422,79 @@ export default function DashboardPage() {
   const [selectedYear, setSelectedYear] = useState<string | undefined>(
     now.getFullYear().toString()
   );
+
+  useEffect(() => {
+  const fetchDashboard = async () => {
+    try {
+      const token = Cookies.get('token');
+
+      // Konversi nama bulan (e.g. "January") ke angka (e.g. "01")
+      const monthIndex = monthNames.indexOf(selectedMonth || '') + 1;
+      const month = String(monthIndex).padStart(2, '0'); // '01', '02', dst.
+      const year = selectedYear || new Date().getFullYear().toString();
+
+      const res = await fetch(`http://127.0.0.1:8000/api/employee/dashboard?month=${month}&year=${year}`, {
+        headers: {
+          Authorization: `Bearer 1|v4e5ULWVv4Yq22iux7Eeb8eakdtwRVHcH9VxgfL154f11c34`,
+        },
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw data;
+      }
+
+      setDashboardData({
+        totalWorkHour: data.totalWorkHour || [],
+        totalAttendance: data.totalAttendance || [],
+        leaveSummary: data.leaveSummary || {},
+        totalOnTime: data.totalOnTime || [],
+        overtimeSummary: data.overtimeSummary || [],
+        monthlySalaryLastYear: data.monthlySalaryLastYear || [],
+      });
+    } catch (err) {
+      let message = "Unknown error occurred";
+      let messagesToShow: string[] = [];
+
+      if (
+        err &&
+        typeof err === "object" &&
+        "message" in err &&
+        typeof (err as any).message === "string"
+      ) {
+        const backendError = err as { message: string; errors?: Record<string, string[]> };
+
+        if (backendError.message.toLowerCase().includes("failed to fetch")) {
+          message = "Unknown error occurred";
+        } else {
+          message = backendError.message;
+        }
+
+        messagesToShow = backendError.errors
+          ? Object.values(backendError.errors).flat()
+          : [message];
+      } else {
+        messagesToShow = [message];
+      }
+
+      toast.error(
+        <>
+          <p className="text-red-700 font-bold">Error</p>
+          {messagesToShow.map((msg, idx) => (
+            <div key={idx} className="text-red-700">• {msg}</div>
+          ))}
+        </>,
+        { duration: 30000 }
+      );
+    }
+  };
+
+  // Trigger fetch if both month & year are selected
+  if (selectedMonth && selectedYear) {
+    fetchDashboard();
+  }
+}, [selectedMonth, selectedYear]); // 👈 Tambahkan ini
+
 
   const [isLoading, setIsLoading] = useState(true);
 
@@ -351,6 +538,7 @@ export default function DashboardPage() {
 
   return (
     <Sidebar title="Dashboard">
+      <Toaster position="bottom-right" expand={true} richColors closeButton></Toaster>
       <div className="flex flex-col gap-[30px]">
         <div className="w-[229px]">
           {isLoading ? (
@@ -480,7 +668,7 @@ export default function DashboardPage() {
                   </svg>
                 }
                 title="Total Work Hours"
-                value="222 Hours"
+                value={totalMonthlyWorkHour}
               ></DashboardCard>
               <DashboardCard
                 icon={
@@ -501,7 +689,8 @@ export default function DashboardPage() {
                   </svg>
                 }
                 title="On Time"
-                value="120 Times"
+                value={String(dashboardData?.totalOnTime?.[0]?.total_ontime ?? 0)}
+
               ></DashboardCard>
               <DashboardCard
                 icon={
@@ -522,7 +711,7 @@ export default function DashboardPage() {
                   </svg>
                 }
                 title="Late"
-                value="30 Times"
+                value={String(dashboardData?.totalOnTime?.[0]?.total_late ?? 0)}
               ></DashboardCard>
               <DashboardCard
                 icon={
@@ -543,7 +732,7 @@ export default function DashboardPage() {
                   </svg>
                 }
                 title="Absent"
-                value="5 Times"
+                value={absentCount}
               ></DashboardCard>
             </>
           )}
@@ -607,13 +796,13 @@ export default function DashboardPage() {
                 <CardContent className="grid grid-cols-2 gap-[10px] p-0">
                   <TotalQuotaCard
                     title="Total Quota Annual Leave"
-                    value="14 Days"
+                    value={`${dashboardData?.leaveSummary?.max_annual_leave ?? 0} Days`}
                     className="col-span-2"
                     color="bg-info-600"
                   ></TotalQuotaCard>
                   <TotalQuotaCard
                     title="Taken"
-                    value="0 Days"
+                    value={`${dashboardData?.leaveSummary?.used_annual_leave ?? 0} Days`}
                     color="bg-warning-400"
                     showFooter
                     buttonText="See Details"
@@ -621,7 +810,7 @@ export default function DashboardPage() {
                   ></TotalQuotaCard>
                   <TotalQuotaCard
                     title="Remaining"
-                    value="14 Days"
+                    value={`${dashboardData?.leaveSummary?.remaining ?? 0} Days`}
                     color="bg-success-500"
                     showFooter
                     buttonText="Request Leave"
@@ -656,14 +845,14 @@ export default function DashboardPage() {
                 </CardHeader>
                 <CardContent className="grid grid-cols-2 gap-[10px] p-0">
                   <TotalQuotaCard
-                    title="Total Quota Overtime This Month"
-                    value="20 Hours"
+                    title="Total Quota Overtime This Week"
+                    value={`${overtime?.max_weekly_overtime ?? 0} Hours`}
                     className="col-span-2"
                     color="bg-info-600"
                   ></TotalQuotaCard>
                   <TotalQuotaCard
                     title="Taken"
-                    value="5 Hours"
+                    value={`${overtime?.total_overtime_this_week ?? 0} Hours`}
                     color="bg-warning-400"
                     showFooter
                     buttonText="See Details"
@@ -671,10 +860,10 @@ export default function DashboardPage() {
                   ></TotalQuotaCard>
                   <TotalQuotaCard
                     title="Remaining"
-                    value="15 Hours"
+                    value={`${overtime?.remaining_overtime_hour ?? 0} Hours`}
                     color="bg-success-500"
                     showFooter
-                    buttonText="Request Leave"
+                    buttonText="Request Overtime"
                     buttonHref="/overtime/add"
                   ></TotalQuotaCard>
                 </CardContent>
