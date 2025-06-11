@@ -122,7 +122,7 @@ const AttendanceForm: React.FC<AttendanceFormProps> = ({ onClockInStatusChange }
     lat: number;
     lng: number;
   } | null>(null);
-
+  
   const [isLoading, setIsLoading] = useState(false);
 
   const { errors: contextErrors, setErrors, setSuccess } = useFormContext();

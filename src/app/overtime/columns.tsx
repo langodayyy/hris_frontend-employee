@@ -6,7 +6,6 @@ import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ApprovalStatusBadge } from "@/components/ui/approval";
 
-
 import RejectionReasonDialog from "@/components/ui/reject-reason-dialog";
 
 // This type is used to define the shape of our data.
@@ -17,7 +16,7 @@ export type OvertimeOverview = {
   date?: string | { startDate: string; endDate: string };
   totalHours?: string;
   overtimePayroll?: string;
-status: string;
+  status: string;
 };
 
 export const columns: ColumnDef<OvertimeOverview>[] = [
@@ -127,16 +126,20 @@ export const columns: ColumnDef<OvertimeOverview>[] = [
       const reason = row.getValue("reason") as string | undefined;
       const showButton = status === "Rejected";
 
-      if (!showButton) return null;
-      return (
-        <RejectionReasonDialog
-          reasonText="See Reason"
-          dialogTitle="Why it was rejected"
-          dialogDescription="Your overtime payment submission has been reviewed and unfortunately cannot be approved at this time. The submitted request does not meet the required criteria, as the overtime hours were not pre-approved by the supervisor. Please ensure all future overtime work is authorized in advance."
-          buttonLabel="View"
-        />
-       
-      );
+      if (!showButton) {
+        return (
+          <span className="justify-center flex">-</span>
+        );
+      } else {
+        return (
+          <RejectionReasonDialog
+            reasonText="See Reason"
+            dialogTitle="Why it was rejected"
+            dialogDescription="Your overtime payment submission has been reviewed and unfortunately cannot be approved at this time. The submitted request does not meet the required criteria, as the overtime hours were not pre-approved by the supervisor. Please ensure all future overtime work is authorized in advance."
+            buttonLabel="View"
+          />
+        );
+      }
     },
   },
 ];

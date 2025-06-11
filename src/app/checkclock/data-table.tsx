@@ -154,6 +154,7 @@ export function DataTable<TData, TValue>({
                     "w-[280px] justify-start text-left font-normal",
                     !date && "text-neutral-300"
                   )}
+                  id="checkclock-date-filter"
                 >
                   <CalendarIcon />
                   {date ? format(date, "PPP") : <span>Today</span>}
@@ -208,6 +209,7 @@ export function DataTable<TData, TValue>({
                       />
                     </svg>
                   }
+                  id="checkclock-filter"
                 >
                   Filters
                 </Button>
@@ -329,6 +331,7 @@ export function DataTable<TData, TValue>({
               onClick={() =>
                 (window.location.href = "/checkclock/add")
               }
+              id="checkclock-add"
             >
               Add
             </Button>
