@@ -168,7 +168,7 @@ const menuSteps = {
     },
     {
       target: "#overtime-filter",
-      content: "filter your overtime data based on approval status",
+      content: "filter your overtime data based on approval status or overtime name",
       disableBeacon: true,
       placement: "bottom" as const,
     },
