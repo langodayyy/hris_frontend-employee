@@ -64,7 +64,7 @@ const PersonalInformation = ({ employeeData, onUpdate }: Props) => {
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/employees/${employeeData?.employee.employee_id}?_method=PATCH`, {
                     method: "POST",
                     headers: {
-                        "Authorization": `Bearer ${Cookies.get("token")}`,
+                        "Authorization": `Bearer ${Cookies.get("token-employee")}`,
                         // Jangan tambahkan Content-Type manual di sini!
                     },
                     body: formData,

@@ -167,7 +167,7 @@ export default function DashboardPage() {
   useEffect(() => {
   const fetchDashboard = async () => {
     try {
-      const token = Cookies.get('token');
+      const token = Cookies.get('token-employee');
 
       // Konversi nama bulan (e.g. "January") ke angka (e.g. "01")
       const monthIndex = monthNames.indexOf(selectedMonth || '') + 1;

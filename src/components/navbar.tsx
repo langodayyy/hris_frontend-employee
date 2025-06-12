@@ -11,7 +11,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
+import Cookies from "js-cookie";
+import { useRouter } from "next/navigation";
 // import Cookies from "js-cookie";
 
 interface NavbarProps {
@@ -68,6 +69,65 @@ export default function Navbar({ title, avatarImage, userName }: NavbarProps) {
   ];
 
   const notificationCount = notifications.length;
+
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/logout-employee`, {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${Cookies.get("token-employee")}`,
+                    // Jangan tambahkan Content-Type manual di sini!
+                },
+        });
+
+        const responseData = await response.json();
+
+        if (!response.ok) {
+            throw responseData; 
+        }
+        Cookies.remove("token-employee");
+        // router.replace("/sign-in");
+        window.location.href = `${process.env.NEXT_PUBLIC_MAIN_URL}/sign-in`
+    } catch (err) {
+        let message = "Unknown error occurred";
+        let messagesToShow: string[] = [];
+
+        if (
+        err &&
+        typeof err === "object" &&
+        "message" in err &&
+        typeof (err as any).message === "string"
+        ) {
+        const backendError = err as { message: string; errors?: Record<string, string[]> };
+
+        if (backendError.message.toLowerCase().includes("failed to fetch")) {
+            message = "Unknown error occurred";
+        } else {
+            message = backendError.message;
+        }
+
+        messagesToShow = backendError.errors
+            ? Object.values(backendError.errors).flat()
+            : [message];
+        } else {
+        messagesToShow = [message]
+        }
+
+        // toast.error(
+        //     <>
+        //         <p className="text-red-700 font-bold">Error</p>
+        //         {messagesToShow.map((msg, idx) => (
+        //         <div key={idx} className="text-red-700">• {msg}</div>
+        //         ))}
+        //     </>,
+        //     { duration: 30000 }
+        // );
+    } finally {
+
+    }
+  };
 
   return (
     <nav className="sticky z-50 top-0 flex-row items-center h-auto bg-white px-6 py-[16px] justify-between shadow-[0px_2px_4px_#B0B0B0] grid grid-cols-3">
@@ -220,7 +280,7 @@ export default function Navbar({ title, avatarImage, userName }: NavbarProps) {
               Profile
             </DropdownMenuItem>
 
-            <DropdownMenuItem>Logout</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

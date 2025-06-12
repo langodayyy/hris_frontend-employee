@@ -43,7 +43,7 @@ const ContactInformation = ({ employeeData, onUpdate }: Props) => {
         {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${Cookies.get("token")}`,
+            Authorization: `Bearer ${Cookies.get("token-employee")}`,
             // Jangan tambahkan Content-Type manual di sini!
           },
           body: formData,

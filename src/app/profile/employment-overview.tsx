@@ -78,13 +78,13 @@ const EmploymentOverview = ({ employeeData, onUpdate }: Props) => {
             setIsLoading(true);
             const resBank = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/bank`, {
                 headers: {
-                "Authorization": `Bearer ${Cookies.get("token")}`,
+                "Authorization": `Bearer ${Cookies.get("token-employee")}`,
                 "Content-Type": "application/json"
                 }
             })
             const resDepPos = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/department-position`, {
                 headers: {
-                "Authorization": `Bearer ${Cookies.get("token")}`,
+                "Authorization": `Bearer ${Cookies.get("token-employee")}`,
                 "Content-Type": "application/json"
                 }
             })
@@ -180,7 +180,7 @@ const EmploymentOverview = ({ employeeData, onUpdate }: Props) => {
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/employees/${employeeData?.employee.employee_id}?_method=PATCH`, {
                     method: "POST",
                     headers: {
-                        "Authorization": `Bearer ${Cookies.get("token")}`,
+                        "Authorization": `Bearer ${Cookies.get("token-employee")}`,
                         // Jangan tambahkan Content-Type manual di sini!
                     },
                     body: formData,
