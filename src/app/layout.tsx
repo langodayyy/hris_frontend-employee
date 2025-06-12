@@ -202,7 +202,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {showJoyride && (
+        {/* {showJoyride && (
           <DynamicJoyride
             key={joyrideKey}
             steps={steps}
@@ -237,7 +237,7 @@ export default function RootLayout({
               },
             }}
           />
-        )}
+        )} */}
 
         <FormProvider>
           <EditProvider>{children}</EditProvider>
