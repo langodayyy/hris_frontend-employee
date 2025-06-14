@@ -13,15 +13,20 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 // import Cookies from "js-cookie";
 
 interface NavbarProps {
   title: string;
-  avatarImage?: string;
-  userName: string;
 }
 
-export default function Navbar({ title, avatarImage, userName }: NavbarProps) {
+export default function Navbar({ title }: NavbarProps) {
+   const [imageValid, setImageValid] = useState(true);
+  const [avatarImage, setAvatarImage] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string | null>(null);
+  const [employeeId, setEmployeeId] = useState<string | null>(null);
+  const [company, setCompany] = useState<string | null>(null);
+
   // Fungsi untuk mengambil inisial dari nama pengguna
   const getInitials = (name: string) => {
     const nameParts = name.split(" ");
@@ -71,6 +76,32 @@ export default function Navbar({ title, avatarImage, userName }: NavbarProps) {
   const notificationCount = notifications.length;
 
   const router = useRouter();
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const token = Cookies.get('token-employee');
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/get-user-employee`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw data;
+        }
+        setAvatarImage(data.photo_url);
+        setUserName(data.full_name);
+        setCompany(data.company_name);
+        setEmployeeId(data.id_employee)
+
+      } catch (err) {
+      
+      }
+    };
+    fetchUser();
+  }, [])
 
   const handleLogout = async () => {
     try {
@@ -232,18 +263,18 @@ export default function Navbar({ title, avatarImage, userName }: NavbarProps) {
                   />
                 ) : (
                   <span className="text-white text-sm font-medium">
-                    {getInitials(userName)}
+                    {userName}
                   </span>
                 )}
               </div>
               <div className="flex flex-col h-auto w-auto">
                 <span className="text-base font-medium text-neutral-950">
-                  {userName.length > 20
+                  {userName && userName.length > 20
                     ? `${userName.slice(0, 20)}...`
-                    : userName}
+                    : userName || "Loading..."}
                 </span>
                 <span className="text-sm text-start ext-neutral-500">
-                  Employee ID
+                  {employeeId}
                 </span>
               </div>
             </div>
@@ -260,7 +291,7 @@ export default function Navbar({ title, avatarImage, userName }: NavbarProps) {
                     />
                   ) : (
                     <span className="text-white text-sm font-medium">
-                      {getInitials(userName)}
+                      {userName}
                     </span>
                   )}
                 </div>
@@ -268,7 +299,7 @@ export default function Navbar({ title, avatarImage, userName }: NavbarProps) {
                   <span className="text-base font-medium text-neutral-900 text-center">
                     Hello, {userName}
                   </span>
-                  <span className="text-sm text-neutral-500">Employee ID</span>
+                  <span className="text-sm text-neutral-500">ID : {employeeId}</span>
                 </div>
               </div>
             </DropdownMenuLabel>

@@ -375,7 +375,6 @@ export default function Sidebar({ children, title }: LayoutProps) {
         <div className="flex flex-col">
           <Navbar
             title={title}
-            userName="Silfi Nazarina"
           />
           <main className="p-[30px] ">{children}</main>
         </div>
