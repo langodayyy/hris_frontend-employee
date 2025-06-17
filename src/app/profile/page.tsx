@@ -42,329 +42,331 @@ import {
 } from "@/components/ui/alert-dialog";
 import PasswordInput from "@/components/ui/passwordInput";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useProfilData } from "@/hooks/useProfileData";
+
 
 export default function EmployeeDetails() {
-  const [employeeStatus, setEmployeeStatus] = useState("");
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-  const inputFileRef = useRef<HTMLInputElement>(null);
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setAvatarPreview(URL.createObjectURL(file));
-    }
-  };
+   const {profileRule} = useProfilData();
+   console.log("Profile Rule:", profileRule);
 
-  const handleEditPhotoClick = () => {
-    inputFileRef.current?.click();
-  };
-  const handleCancelPhotoClick = () => {
-    setAvatarPreview(null); // reset preview foto
-    if (inputFileRef.current) {
-      inputFileRef.current.value = ""; // reset input file supaya kosong
-    }
-  };
-  const [loadingPhoto, setLoadingPhoto] = useState(false);
-  const [successPhoto, setSuccessPhoto] = useState(false);
-  const [errorPhoto, setErrorPhoto] = useState(false);
-  const handleSavePhotoCLick = async () => {
-    setLoadingPhoto(true);
-    setErrorPhoto(false);
-    setSuccessPhoto(false);
 
-    try {
-      const formData = new FormData();
 
-      const file = inputFileRef.current?.files?.[0];
-      if (file) {
-        formData.append("employee_photo", file);
-      }
-
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/employees/${employeeData?.employee.employee_id}?_method=PATCH`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${Cookies.get("token-employee")}`,
-            // Jangan tambahkan Content-Type manual di sini!
-          },
-          body: formData,
-        }
-      );
-
-      const responseData = await response.json();
-      console.log("Response:", responseData);
-
-      if (!response.ok) throw new Error("Gagal submit");
-
-      setSuccessPhoto(true);
-      fetchData();
-      setAvatarPreview(null);
-    } catch (err) {
-      console.error("Submit error:", err);
-      setErrorPhoto(true);
-    } finally {
-      setLoadingPhoto(false);
-    }
-  };
-  const [isDialogAOpen, setDialogAOpen] = useState(false);
-  const handleOkClick = async () => {
-    // panggil fetchData()
-    setDialogAOpen(false);
-    setSuccess(false); // reset state jika perlu
-  };
-  // const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-  // const handleChangeStatus = () => {
-  //     setIsDialogOpen(true);
+  // const [employeeStatus, setEmployeeStatus] = useState("");
+  // const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  // const inputFileRef = useRef<HTMLInputElement>(null);
+  // const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = e.target.files?.[0];
+  //   if (file) {
+  //     setAvatarPreview(URL.createObjectURL(file));
+  //   }
   // };
-  const params = useParams();
-  const id = params.id;
-  const [employeeData, setEmployeeData] = useState<
-    EmployeeResponse | undefined
-  >(undefined);
-  const [isLoading, setIsLoading] = useState(true);
-  const fetchData = async () => {
-    try {
-      setIsLoading(true);
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/employees/${id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${Cookies.get("token-employee")}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
 
-      if (!res.ok) throw new Error("Failed to fetch employee");
+  // const handleEditPhotoClick = () => {
+  //   inputFileRef.current?.click();
+  // };
+  // const handleCancelPhotoClick = () => {
+  //   setAvatarPreview(null); // reset preview foto
+  //   if (inputFileRef.current) {
+  //     inputFileRef.current.value = ""; // reset input file supaya kosong
+  //   }
+  // };
+  // const [loadingPhoto, setLoadingPhoto] = useState(false);
+  // const [successPhoto, setSuccessPhoto] = useState(false);
+  // const [errorPhoto, setErrorPhoto] = useState(false);
+  // const handleSavePhotoCLick = async () => {
+  //   setLoadingPhoto(true);
+  //   setErrorPhoto(false);
+  //   setSuccessPhoto(false);
 
-      const data: EmployeeResponse = await res.json();
-      setEmployeeData(data);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  //   try {
+  //     const formData = new FormData();
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState(false);
-
-  const handleExportButton = async () => {
-    setLoading(true);
-    setError(false);
-    setSuccess(false);
-
-    try {
-      const baseUrl = `${process.env.NEXT_PUBLIC_API_URL}/employee/export-csv`;
-      const params = new URLSearchParams();
-
-      if (employeeData?.employee.employee_id) {
-        params.append("employee_id", employeeData?.employee.employee_id);
-        const url = params.toString()
-          ? `${baseUrl}?${params.toString()}`
-          : baseUrl;
-
-        const response = await fetch(url, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${Cookies.get("token-employee")}`,
-          },
-        });
-
-        if (!response.ok) throw new Error("Gagal mengunduh file");
-
-        const blob = await response.blob();
-        const downloadUrl = window.URL.createObjectURL(blob);
-
-        const a = document.createElement("a");
-        a.href = downloadUrl;
-        a.download = "employees.csv";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        window.URL.revokeObjectURL(downloadUrl);
-
-        // setSuccess(true);
-      }
-    } catch (err) {
-      console.error("Submit error:", err);
-      setError(true);
-    } finally {
-      setLoading(false);
-    }
-  };
-  const handleSubmitForm = async () => {
-    setLoading(true);
-    setError(false);
-    setSuccess(false);
-
-    try {
-      const form = document.getElementById("employeeForm") as HTMLFormElement;
-      const formData = new FormData(form);
-
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/employees/${employeeData?.employee.employee_id}?_method=PATCH`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${Cookies.get("token-employee")}`,
-            // Jangan tambahkan Content-Type manual di sini!
-          },
-          body: formData,
-        }
-      );
-
-      const responseData = await response.json();
-      console.log("Response:", responseData);
-
-      if (!response.ok) throw new Error("Gagal submit");
-
-      setSuccess(true);
-    } catch (err) {
-      console.error("Submit error:", err);
-      setError(true);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const resetEmployeePassword = async () => {
-    setLoading(true);
-    setError(false);
-    setSuccess(false);
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/employees/${employeeData?.employee.employee_id}/reset-password`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${Cookies.get("token-employee")}`,
-            // Jangan tambahkan Content-Type manual di sini!
-          },
-        }
-      );
-
-      const responseData = await response.json();
-      console.log("Response:", responseData);
-
-      if (!response.ok) throw new Error("Gagal submit");
-
-      setSuccess(true);
-    } catch (err) {
-      console.error("Submit error:", err);
-      setError(true);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const router = useRouter();
-  // const deleteEmployee = async () => {
-  //     setLoading(true);
-  //     setError(false);
-  //     setSuccess(false);
-  //     try {
-
-  //         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/employees/${employeeData?.employee.employee_id}`, {
-  //                 method: "DELETE",
-  //                 headers: {
-  //                     "Authorization": `Bearer ${Cookies.get("token")}`,
-  //                     // Jangan tambahkan Content-Type manual di sini!
-  //                 },
-  //         });
-
-  //         const responseData = await response.json();
-  //         console.log("Response:", responseData);
-
-  //         if (!response.ok) throw new Error("Gagal submit");
-
-  //         setSuccess(true);
-  //     } catch (err) {
-  //         console.error("Submit error:", err);
-  //         setError(true);
-  //     } finally {
-  //         setLoading(false);
+  //     const file = inputFileRef.current?.files?.[0];
+  //     if (file) {
+  //       formData.append("employee_photo", file);
   //     }
+
+  //     const response = await fetch(
+  //       `${process.env.NEXT_PUBLIC_API_URL}/employees/${employeeData?.employee.employee_id}?_method=PATCH`,
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           Authorization: `Bearer ${Cookies.get("token-employee")}`,
+  //           // Jangan tambahkan Content-Type manual di sini!
+  //         },
+  //         body: formData,
+  //       }
+  //     );
+
+  //     const responseData = await response.json();
+  //     console.log("Response:", responseData);
+
+  //     if (!response.ok) throw new Error("Gagal submit");
+
+  //     setSuccessPhoto(true);
+  //     fetchData();
+  //     setAvatarPreview(null);
+  //   } catch (err) {
+  //     console.error("Submit error:", err);
+  //     setErrorPhoto(true);
+  //   } finally {
+  //     setLoadingPhoto(false);
+  //   }
+  // };
+  // const [isDialogAOpen, setDialogAOpen] = useState(false);
+  // const handleOkClick = async () => {
+  //   // panggil fetchData()
+  //   setDialogAOpen(false);
+  //   setSuccess(false); // reset state jika perlu
+  // };
+  // // const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  // // const handleChangeStatus = () => {
+  // //     setIsDialogOpen(true);
+  // // };
+  // const params = useParams();
+  // const id = params.id;
+  // const [employeeData, setEmployeeData] = useState<
+  //   EmployeeResponse | undefined
+  // >(undefined);
+  // const [isLoading, setIsLoading] = useState(true);
+  // const fetchData = async () => {
+  //   try {
+  //     setIsLoading(true);
+  //     const res = await fetch(
+  //       `${process.env.NEXT_PUBLIC_API_URL}/employees/${id}`,
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${Cookies.get("token-employee")}`,
+  //           "Content-Type": "application/json",
+  //         },
+  //       }
+  //     );
+
+  //     if (!res.ok) throw new Error("Failed to fetch employee");
+
+  //     const data: EmployeeResponse = await res.json();
+  //     setEmployeeData(data);
+  //   } catch (error) {
+  //     console.error("Error fetching data:", error);
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
   // };
 
-  // const [isDialogEmployeeStatusOpen, setDialogEmployeeStatusOpen] = useState(false);
-  // const [isDialogResetPasswordOpen, setDialogResetPasswordOpen] = useState(false);
-  // const [isDialogDeleteOpen, setDialogDeleteOpen] = useState(false);
-  // const [confirmationText, setConfirmationText] = useState("");
+  // useEffect(() => {
+  //   fetchData();
+  // }, []);
 
-  // const handleOkClickEmployeeStatus = async () => {
-  //     fetchData()
-  //     setDialogEmployeeStatusOpen(false)
-  //     setSuccess(false);
+  // const [loading, setLoading] = useState(false);
+  // const [success, setSuccess] = useState(false);
+  // const [error, setError] = useState(false);
 
+  // const handleExportButton = async () => {
+  //   setLoading(true);
+  //   setError(false);
+  //   setSuccess(false);
+
+  //   try {
+  //     const baseUrl = `${process.env.NEXT_PUBLIC_API_URL}/employee/export-csv`;
+  //     const params = new URLSearchParams();
+
+  //     if (employeeData?.employee.employee_id) {
+  //       params.append("employee_id", employeeData?.employee.employee_id);
+  //       const url = params.toString()
+  //         ? `${baseUrl}?${params.toString()}`
+  //         : baseUrl;
+
+  //       const response = await fetch(url, {
+  //         method: "GET",
+  //         headers: {
+  //           Authorization: `Bearer ${Cookies.get("token-employee")}`,
+  //         },
+  //       });
+
+  //       if (!response.ok) throw new Error("Gagal mengunduh file");
+
+  //       const blob = await response.blob();
+  //       const downloadUrl = window.URL.createObjectURL(blob);
+
+  //       const a = document.createElement("a");
+  //       a.href = downloadUrl;
+  //       a.download = "employees.csv";
+  //       document.body.appendChild(a);
+  //       a.click();
+  //       a.remove();
+  //       window.URL.revokeObjectURL(downloadUrl);
+
+  //       // setSuccess(true);
+  //     }
+  //   } catch (err) {
+  //     console.error("Submit error:", err);
+  //     setError(true);
+  //   } finally {
+  //     setLoading(false);
+  //   }
   // };
-  // const handleOkClickResetPassword = async () => {
-  //     setDialogResetPasswordOpen(false)
-  //     setSuccess(false);
+  // const handleSubmitForm = async () => {
+  //   setLoading(true);
+  //   setError(false);
+  //   setSuccess(false);
 
+  //   try {
+  //     const form = document.getElementById("employeeForm") as HTMLFormElement;
+  //     const formData = new FormData(form);
+
+  //     const response = await fetch(
+  //       `${process.env.NEXT_PUBLIC_API_URL}/employees/${employeeData?.employee.employee_id}?_method=PATCH`,
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           Authorization: `Bearer ${Cookies.get("token-employee")}`,
+  //           // Jangan tambahkan Content-Type manual di sini!
+  //         },
+  //         body: formData,
+  //       }
+  //     );
+
+  //     const responseData = await response.json();
+  //     console.log("Response:", responseData);
+
+  //     if (!response.ok) throw new Error("Gagal submit");
+
+  //     setSuccess(true);
+  //   } catch (err) {
+  //     console.error("Submit error:", err);
+  //     setError(true);
+  //   } finally {
+  //     setLoading(false);
+  //   }
   // };
-  // const handleOkClickDelete = async () => {
-  //     setDialogDeleteOpen(false)
-  //     setSuccess(false);
-  //     router.push("/employee");
 
+  // const resetEmployeePassword = async () => {
+  //   setLoading(true);
+  //   setError(false);
+  //   setSuccess(false);
+  //   try {
+  //     const response = await fetch(
+  //       `${process.env.NEXT_PUBLIC_API_URL}/employees/${employeeData?.employee.employee_id}/reset-password`,
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           Authorization: `Bearer ${Cookies.get("token-employee")}`,
+  //           // Jangan tambahkan Content-Type manual di sini!
+  //         },
+  //       }
+  //     );
+
+  //     const responseData = await response.json();
+  //     console.log("Response:", responseData);
+
+  //     if (!response.ok) throw new Error("Gagal submit");
+
+  //     setSuccess(true);
+  //   } catch (err) {
+  //     console.error("Submit error:", err);
+  //     setError(true);
+  //   } finally {
+  //     setLoading(false);
+  //   }
   // };
-  // const handleChangeStatus = () => {
-  //     setDialogEmployeeStatusOpen(true);
-  // };
 
-  // const handleResetPassword = () => {
-  //     setDialogResetPasswordOpen(true)
-  // }
-  // const handleDelete = () => {
-  //     setDialogDeleteOpen(true)
-  // }
+  // const router = useRouter();
+  // // const deleteEmployee = async () => {
+  // //     setLoading(true);
+  // //     setError(false);
+  // //     setSuccess(false);
+  // //     try {
 
-  // icon & change password state
-  const [isHeaderDropdownOpen, setIsHeaderDropdownOpen] = useState(false);
-  const [showChangePasswordDialog, setShowChangePasswordDialog] =
-    useState(false);
+  // //         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/employees/${employeeData?.employee.employee_id}`, {
+  // //                 method: "DELETE",
+  // //                 headers: {
+  // //                     "Authorization": `Bearer ${Cookies.get("token")}`,
+  // //                     // Jangan tambahkan Content-Type manual di sini!
+  // //                 },
+  // //         });
 
-  // Password Change Handlers
-  const handleOpenChangePasswordDialog = useCallback(() => {
-    setIsHeaderDropdownOpen(false);
-    setShowChangePasswordDialog(true);
-  }, []);
+  // //         const responseData = await response.json();
+  // //         console.log("Response:", responseData);
 
-  const handleChangePasswordSubmit = useCallback(() => {
-    // Implement password change logic here (e.g., API call)
-    console.log("Password changed!");
-    setShowChangePasswordDialog(false);
-  }, []);
+  // //         if (!response.ok) throw new Error("Gagal submit");
+
+  // //         setSuccess(true);
+  // //     } catch (err) {
+  // //         console.error("Submit error:", err);
+  // //         setError(true);
+  // //     } finally {
+  // //         setLoading(false);
+  // //     }
+  // // };
+
+  // // const [isDialogEmployeeStatusOpen, setDialogEmployeeStatusOpen] = useState(false);
+  // // const [isDialogResetPasswordOpen, setDialogResetPasswordOpen] = useState(false);
+  // // const [isDialogDeleteOpen, setDialogDeleteOpen] = useState(false);
+  // // const [confirmationText, setConfirmationText] = useState("");
+
+  // // const handleOkClickEmployeeStatus = async () => {
+  // //     fetchData()
+  // //     setDialogEmployeeStatusOpen(false)
+  // //     setSuccess(false);
+
+  // // };
+  // // const handleOkClickResetPassword = async () => {
+  // //     setDialogResetPasswordOpen(false)
+  // //     setSuccess(false);
+
+  // // };
+  // // const handleOkClickDelete = async () => {
+  // //     setDialogDeleteOpen(false)
+  // //     setSuccess(false);
+  // //     router.push("/employee");
+
+  // // };
+  // // const handleChangeStatus = () => {
+  // //     setDialogEmployeeStatusOpen(true);
+  // // };
+
+  // // const handleResetPassword = () => {
+  // //     setDialogResetPasswordOpen(true)
+  // // }
+  // // const handleDelete = () => {
+  // //     setDialogDeleteOpen(true)
+  // // }
+
+  // // icon & change password state
+  // const [isHeaderDropdownOpen, setIsHeaderDropdownOpen] = useState(false);
+  // const [showChangePasswordDialog, setShowChangePasswordDialog] =
+  //   useState(false);
+
+  // // Password Change Handlers
+  // const handleOpenChangePasswordDialog = useCallback(() => {
+  //   setIsHeaderDropdownOpen(false);
+  //   setShowChangePasswordDialog(true);
+  // }, []);
+
+  // const handleChangePasswordSubmit = useCallback(() => {
+  //   // Implement password change logic here (e.g., API call)
+  //   console.log("Password changed!");
+  //   setShowChangePasswordDialog(false);
+  // }, []);
 
   return (
     <Sidebar title="Profile">
       <div className="flex flex-col gap-[30px]">
-        {/* <Card className="flex-1 rounded-[15px] border border-black/15 bg-white shadow-[0px_2px_2px_0px_rgba(0,0,0,0.25)] overflow-hidden">
-                    <div className="w-full mx-[20px] mb-[-10px]">
-                            <h2 className="justify-center w-full text-lg font-medium whitespace-nowrap mx-[10px]">Employee Details</h2>
-                    </div> */}
-        {isLoading ? (
-          // <Card className="flex-1 gap-[15px] rounded-[15px] border border-black/15 bg-white shadow-[0px_2px_2px_0px_rgba(0,0,0,0.25)] overflow-hidden">
-          // {/* <Spinner className="w-full mx-[20px] my-[10px]" size="medium" /> */}
-          // {/* </Card> */}
+        
+        {/* {isLoading ? (
+          
           <>
             <Skeleton className="rounded-[15px] w-full min-h-[230px]" />
             <Skeleton className="rounded-[15px] w-full min-h-[230px]" />
           </>
-        ) : (
+        ) : (" ")} */}
           <div>
             <Card className="flex-1 gap-[15px] rounded-[15px] border border-black/15 bg-white shadow-[0px_2px_2px_0px_rgba(0,0,0,0.25)] overflow-hidden">
               <div className="flex mx-[20px] items-center justify-between">
                 <div className="flex flex-row items-center">
                   <div className="relative w-[78px] h-[78px]">
-                    {avatarPreview || employeeData?.employee_photo_url ? (
+                    {/* {avatarPreview || employeeData?.employee_photo_url ? (
                       <img
                         src={
                           avatarPreview ??
@@ -374,7 +376,7 @@ export default function EmployeeDetails() {
                         alt="Employee Photo"
                         className="w-[78px] h-[78px] rounded-full object-cover bg-gray-200"
                       />
-                    ) : (
+                    ) :  ("" )} */}
                       <svg
                         width="78"
                         height="78"
@@ -401,10 +403,10 @@ export default function EmployeeDetails() {
                           <rect width="78" height="78" rx="39" fill="#D1D5DB" />
                         </g>
                       </svg>
-                    )}
+                    
                     {/* Tombol edit kecil di pojok kanan bawah */}
                     <button
-                      onClick={handleEditPhotoClick}
+                      // onClick={handleEditPhotoClick}
                       type="button"
                       className="absolute bottom-0 right-0 bg-white border border-gray-300 rounded-full p-1 hover:bg-gray-100 shadow-md"
                       aria-label="Edit photo"
@@ -440,11 +442,11 @@ export default function EmployeeDetails() {
                     accept="image/*"
                     id="employee_photo"
                     className="hidden"
-                    ref={inputFileRef}
-                    onChange={handleFileChange}
+                    // ref={inputFileRef}
+                    // onChange={handleFileChange}
                   />
                   <div className="flex flex-col ml-[15px] gap-[10px]">
-                    {avatarPreview && (
+                    {/* {avatarPreview && (
                       <>
                         <Button
                           disabled={loadingPhoto}
@@ -471,7 +473,7 @@ export default function EmployeeDetails() {
                           )}
                         </Button>
                       </>
-                    )}
+                    )} */}
                   </div>
 
                   <div className="flex flex-col ml-[15px] gap-[10px]">
@@ -489,8 +491,8 @@ export default function EmployeeDetails() {
                 </div>
                 {/* Header Profile Dropdown */}
                 <DropdownMenu
-                  open={isHeaderDropdownOpen}
-                  onOpenChange={setIsHeaderDropdownOpen}
+                  // open={isHeaderDropdownOpen}
+                  // onOpenChange={setIsHeaderDropdownOpen}
                 >
                   <DropdownMenuTrigger asChild>
                     <Button
@@ -532,10 +534,10 @@ export default function EmployeeDetails() {
                   <DropdownMenuContent className="w-fit h-fit">
                     <DropdownMenuItem
                       className="w-full h-fit cursor-pointer"
-                      onSelect={(e) => {
-                        e.preventDefault();
-                        handleOpenChangePasswordDialog();
-                      }}
+                      // onSelect={(e) => {
+                      //   e.preventDefault();
+                      //   handleOpenChangePasswordDialog();
+                      // }}
                     >
                       Change password
                     </DropdownMenuItem>
@@ -544,8 +546,8 @@ export default function EmployeeDetails() {
 
                 {/* Change Password Dialog */}
                 <Dialog
-                  open={showChangePasswordDialog}
-                  onOpenChange={setShowChangePasswordDialog}
+                  // open={showChangePasswordDialog}
+                  // onOpenChange={setShowChangePasswordDialog}
                 >
                   <DialogContent className="sm:max-w-[425px] bg-white">
                     <DialogHeader>
@@ -581,7 +583,7 @@ export default function EmployeeDetails() {
                         <Button
                           variant={"default"}
                           className="w-fit h-fit"
-                          onClick={handleChangePasswordSubmit}
+                          // onClick={handleChangePasswordSubmit}
                         >
                           Save
                         </Button>
@@ -592,7 +594,7 @@ export default function EmployeeDetails() {
               </div>
               <div className="flex gap-[15px]">
                 <div className="w-6/10">
-                  <PersonalInformation
+                  {/* <PersonalInformation
                     employeeData={employeeData}
                     onUpdate={fetchData}
                   ></PersonalInformation>
@@ -605,12 +607,12 @@ export default function EmployeeDetails() {
                   <EmploymentOverview
                     employeeData={employeeData}
                     onUpdate={fetchData}
-                  ></EmploymentOverview>
+                  ></EmploymentOverview> */}
                 </div>
               </div>
             </Card>
           </div>
-        )}
+        
         {/* </Card> */}
         <EmployeeDocuments></EmployeeDocuments>
       </div>
