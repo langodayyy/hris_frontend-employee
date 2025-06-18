@@ -7,57 +7,80 @@ import { DataTable } from "./data-table";
 import { useFormContext } from "@/components/context/FormContext";
 import { Toaster, toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
-// import Cookies from "js-cookie";
+import Cookies from "js-cookie";
 
 export default function OvertimeOverviewPage() {
   const [data, setData] = useState<OvertimeOverview[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
+  const [overtimeData, setOvertimeData] = useState([]);
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
-    async function fetchData() {
-      const overtimeTypes = ["Weekday", "Weekend", "Holiday"];
-  const approvalStatus = ["Approved", "Pending", "Rejected"];
+    const fetchOvertime = async () => {
+      setLoading(true);
+      try {
+        const token = Cookies.get('token-employee');
 
-  const dynamicData = Array.from({ length: 50 }, (_, i) => {
-    const overtimeName = overtimeTypes[Math.floor(Math.random() * overtimeTypes.length)];
-    const date = `2023-10-${String(Math.floor(Math.random() * 30) + 1).padStart(2, "0")}`;
-    const totalHours = Math.floor(Math.random() * 5) + 1;
-    const overtimePayroll = totalHours * 50000;
-    const status = approvalStatus[Math.floor(Math.random() * approvalStatus.length)];
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/employee/overtime`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-    return {
-      id: i + 1,
-      overtimeName,
-      date,
-      totalHours: totalHours.toString(),      
-      overtimePayroll: overtimePayroll.toString(), 
-      status                                  
-    };
-      });
-      setData(dynamicData);
-      setIsLoading(false);
-    }
+        const data = await res.json();
+        if (!res.ok) {
+          throw data;
+        }
+        // setOvertimeSettingData(data);
+        console.log(data)
+        setOvertimeData(data)
+      } catch (err) {
+        let message = "Unknown error occurred";
+        let messagesToShow: string[] = [];
 
-    fetchData();
-  }, []);
-  const { success, setSuccess } =useFormContext();
-    useEffect(() => {
-      if (success && Object.keys(success).length > 0) {
-        toast.success(`${success.overtime}`);
-        console.log(success);
-        setSuccess({}); 
+        if (
+          err &&
+          typeof err === "object" &&
+          "message" in err &&
+          typeof (err as any).message === "string"
+        ) {
+          const backendError = err as { message: string; errors?: Record<string, string[]> };
+
+          if (backendError.message.toLowerCase().includes("failed to fetch")) {
+            message = "Unknown error occurred";
+          } else {
+            message = backendError.message;
+          }
+
+          messagesToShow = backendError.errors
+            ? Object.values(backendError.errors).flat()
+            : [message];
+        } else {
+          messagesToShow = [message];
+        }
+
+        toast.error(
+          <>
+            <p className="text-red-700 font-bold">Error</p>
+            {messagesToShow.map((msg, idx) => (
+              <div key={idx} className="text-red-700">• {msg}</div>
+            ))}
+          </>,
+          { duration: 30000 }
+        );
+      } finally {
+        setLoading(false);
       }
-    }, [success]); 
-
+    }
+   fetchOvertime()
+  }, [])
   return (
     <Sidebar title="Overtime">
-      <Toaster position="bottom-right" expand={true} />
-      {isLoading ? (
+      {/* <Toaster position="bottom-right" expand={true} /> */}
+      {loading ? (
         <Skeleton className="rounded-[15px] w-full min-h-[230px] " />
       ) : (
         <div className=" bg-white rounded-[15px] p-5 flex flex-col gap-[10px]" id="overtime">
           <div className="container mx-auto">
-            <DataTable columns={columns} data={data} />
+            <DataTable columns={columns} data={overtimeData} />
           </div>
         </div>
       )}

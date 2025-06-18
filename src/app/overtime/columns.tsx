@@ -7,16 +7,33 @@ import { Button } from "@/components/ui/button";
 import { ApprovalStatusBadge } from "@/components/ui/approval";
 
 import RejectionReasonDialog from "@/components/ui/reject-reason-dialog";
-
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
 export type OvertimeOverview = {
-  id: number;
-  overtimeName?: string;
-  date?: string | { startDate: string; endDate: string };
-  totalHours?: string;
-  overtimePayroll?: string;
+  id: string;
+  employee_id: string;
+  name: string;
+  overtime_name: string;
+  // type: "Government Regulation" | "Flat";
+  type: string;
+  date: string;
+  start_hour: number;
+  end_hour: number;
+  payroll: number;
+  // status: "Approved" | "Pending" | "Rejected";
   status: string;
+  overtimeEvidenceUrl?: string;
 };
 
 export const columns: ColumnDef<OvertimeOverview>[] = [
@@ -27,20 +44,22 @@ export const columns: ColumnDef<OvertimeOverview>[] = [
     size: 50,
   },
   {
-    accessorKey: "overtimeName",
-    header: ({ column }) => {
-      return <div className="text-center">Overtime Name</div>;
-    },
-    cell: ({ row }) => (
-      <div className="text-center">{row.getValue("overtimeName")}</div>
-    ),
-    filterFn: (row, columnId, filterValue) => {
-      return filterValue.includes(row.getValue(columnId));
-    },
-  },
-
+    accessorKey: "overtime_name",
+    header: "Overtime Name",
+  },  
   {
+    accessorKey: "type",
+    header: "Overtime Type",
+    filterFn: (row, columnId, filterValues: string[]) => {
+      if (filterValues.length === 0) return true; // If no filters selected, show all
+      const overtimeType = row.getValue(columnId) as string;
+      return filterValues.includes(overtimeType);
+    },
+
+  },
+    {
     accessorKey: "date",
+    enableSorting: true,
     header: ({ column }) => {
       return (
         <Button
@@ -48,50 +67,30 @@ export const columns: ColumnDef<OvertimeOverview>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Date
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          <ArrowUpDown />
         </Button>
       );
     },
-    cell: ({ row }) => {
-      const date = row.getValue("date") as
-        | string
-        | { startDate: string; endDate: string };
-      return (
-        <div className="text-center">
-          {typeof date === "string" ? date : `${date.startDate}`}
-        </div>
-      );
-    },
+    cell: ({ row }) => <div>{row.getValue("date")}</div>,
   },
 
   {
-    accessorKey: "totalHours",
-    header: ({ column }) => {
-      return <div className="text-center">Total Hours</div>;
-    },
-    cell: ({ row }) => (
-      <div className="text-center">{row.getValue("totalHours")} Hours</div>
-    ),
-    filterFn: (row, columnId, filterValue) => {
-      return filterValue.includes(row.getValue(columnId));
-    },
+    accessorKey: "start_hour",
+    header: "Start Hour",
   },
   {
-    accessorKey: "overtimePayroll",
-    header: ({ column }) => {
-      return <div className="text-center">Overtime Payroll</div>;
-    },
-    cell: ({ row }) => (
-      <div className="text-center">IDR {row.getValue("overtimePayroll")}</div>
-    ),
-    filterFn: (row, columnId, filterValue) => {
-      if (Array.isArray(filterValue)) {
-        return filterValue.includes(row.getValue(columnId));
-      }
-      return row.getValue(columnId) === filterValue;
+    accessorKey: "end_hour",
+    header: "End Hour",
+  },
+  {
+    accessorKey: "payroll",
+    header: "Overtime Payroll",
+    cell: ({ getValue }) => {
+      const value = getValue() as number;
+      const formatted = (value || 0).toLocaleString("id-ID"); // 1.000.000
+      return `IDR ${formatted}`;
     },
   },
-
   {
     accessorKey: "status",
     header: ({ column }) => {
@@ -116,14 +115,14 @@ export const columns: ColumnDef<OvertimeOverview>[] = [
     },
   },
   {
-    accessorKey: "reason",
+    accessorKey: "rejection_reason",
     header: ({ column }) => {
       return <div className="text-center">Reason</div>;
     },
     cell: ({ row }) => {
       const status = row.getValue("status") as string | undefined;
 
-      const reason = row.getValue("reason") as string | undefined;
+      const reason = row.getValue("rejection_reason") as string | undefined;
       const showButton = status === "Rejected";
 
       if (!showButton) {
@@ -135,11 +134,51 @@ export const columns: ColumnDef<OvertimeOverview>[] = [
           <RejectionReasonDialog
             reasonText="See Reason"
             dialogTitle="Why it was rejected"
-            dialogDescription="Your overtime payment submission has been reviewed and unfortunately cannot be approved at this time. The submitted request does not meet the required criteria, as the overtime hours were not pre-approved by the supervisor. Please ensure all future overtime work is authorized in advance."
+            dialogDescription={reason}
             buttonLabel="View"
           />
         );
       }
     },
   },
+  {
+    accessorKey: "evidence",
+    id: "evidence",
+    header: "Evidence",
+    cell: ({ row }) => {
+      const evidenceUrl = row.original.overtimeEvidenceUrl;
+      if (!evidenceUrl) {
+        return <span>-</span>;
+      }
+      return (
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="outline" size="sm">
+              View
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Proof of Attendance</AlertDialogTitle>
+              <AlertDialogDescription className="max-h-96 overflow-auto">
+                {evidenceUrl ? (
+                  <img
+                    src={evidenceUrl}
+                    alt="Proof of attendance"
+                    className="rounded-lg max-w-full"
+                  />
+                ) : (
+                  <p>No evidence uploaded.</p>
+                )}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Close</AlertDialogCancel>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      );
+    }
+  }
+
 ];
