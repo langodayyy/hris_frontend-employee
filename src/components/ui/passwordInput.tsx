@@ -1,5 +1,5 @@
 // components/PasswordInput.tsx
-'use client';
+"use client";
 
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
@@ -11,6 +11,8 @@ interface PasswordInputProps {
   label?: string;
   placeholder?: string;
   name: string;
+  value?: string;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 export default function PasswordInput({
@@ -18,6 +20,8 @@ export default function PasswordInput({
   label = "Password",
   placeholder = "Enter your password",
   name,
+  value,
+  onChange,
 }: PasswordInputProps) {
   const [show, setShow] = useState(false);
 
@@ -30,6 +34,8 @@ export default function PasswordInput({
         name={name}
         placeholder={placeholder}
         className="pr-10"
+        value={value}
+        onChange={onChange}
       />
       <button
         type="button"

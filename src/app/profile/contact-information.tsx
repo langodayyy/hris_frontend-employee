@@ -15,13 +15,13 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import PhoneInput from "@/components/ui/phoneInput";
-import { EmployeeResponse } from "@/types/employee";
+import { Employee } from "@/types/employee";
 import { useState } from "react";
 import { Spinner } from "@/components/ui/spinner";
 import Cookies from "js-cookie";
 
 type Props = {
-  employeeData?: EmployeeResponse;
+  employeeData?: Employee;
   onUpdate: () => void;
 };
 
@@ -118,7 +118,7 @@ const ContactInformation = ({ employeeData, onUpdate }: Props) => {
                   <div className="flex flex-col gap-[15px] mt-[15px]">
                     <div className="flex gap-[10px]">
                       <div className="flex flex-col flex-1 gap-[8px]">
-                        <PhoneInput defaultValue={employeeData?.employee.phone} placeholder="Enter employee phone number"/>
+                        <PhoneInput defaultValue={employeeData?.phone} placeholder="Enter employee phone number"/>
                       </div>
                       <div className="flex flex-col flex-1 gap-[8px]">
                         <Label htmlFor="email">Email</Label>
@@ -127,7 +127,7 @@ const ContactInformation = ({ employeeData, onUpdate }: Props) => {
                           id="email"
                           name="email"
                           placeholder="Enter employee email"
-                          defaultValue={employeeData?.employee.email ?? ""}
+                          defaultValue={employeeData?.email ?? ""}
                         />
                       </div>
                     </div>
@@ -255,13 +255,13 @@ const ContactInformation = ({ employeeData, onUpdate }: Props) => {
         <div className="flex flex-col flex-1 gap-[8px]">
           <Label>Phone Number</Label>
           <span className="text-gray-600 border border-neutral-300 rounded-md px-4 py-3 overflow-hidden">
-            {employeeData?.employee.phone ?? "-"}
+            {employeeData?.phone ?? "-"}
           </span>
         </div>
         <div className="flex flex-col flex-1 gap-[8px]">
           <Label>Email</Label>
           <span className="text-gray-600 border border-neutral-300 rounded-md px-4 py-3 overflow-hidden">
-            {employeeData?.employee.email ?? "-"}
+            {employeeData?.email ?? "-"}
           </span>
         </div>
       </div>

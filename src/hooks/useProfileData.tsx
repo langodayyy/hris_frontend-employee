@@ -2,47 +2,16 @@
 import useSWR from "swr";
 import { useEffect, useState, useCallback } from "react";
 import Cookies from "js-cookie";
+import { Employee } from "@/types/employee";
 // import { CheckclockSetting } from "@/types/cksetting";
 import { redirect } from "next/navigation";
-
-export type profileRule = {
-  user_id : number;
-  company_id : String;
-  employee_id : String;
-  nik : String;
-  first_name : String;
-  last_name : String;
-  position_id : number;
-  address : String;
-  email : String;
-  phone : String;
-  birth_place : String;
-  birth_date : String;
-  education : String;
-  religion : String;
-  marital_status : String;
-  citizenship : String;
-  gender : String;
-  blood_type : String;
-  salary : String;
-  contract_type : String;
-  bank_code : String;
-  account_number : String;
-  contract_end : String;
-  join_date : String;
-  exit_date : String;
-  employee_foto : String;
-  employee_status : String;
-
-};
 
 const fetcher = (url: string) =>
   fetch(url, {
     headers: {
-      Authorization: `Bearer ${Cookies.get("token")}`,
+      Authorization: `Bearer ${Cookies.get("token-employee")}`,
       "Content-Type": "application/json",
     },
-    credentials: "include",
   }).then((res) => res.json());
 
 export function useProfilData() {
@@ -51,42 +20,53 @@ export function useProfilData() {
     fetcher
   );
   console.log("API raw data:", data, "error:", error);
- const profillData = data?.profillData ?? null;
-  const profileRule = Array.isArray(data?.data)
-    ? data.data.map((item: any) => ({
-        user_id: item.user_id,
-        company_id: item.company_id,
-        employee_id: item.employee_id,
-        nik: item.nik,
-        first_name: item.first_name, 
-        last_name: item.last_name,
-        position_id: item.position_id,
-        address: item.address,
-        email: item.email, 
-        phone: item.phone, 
-        birth_place: item.birth_place, 
-        birth_date: item.birth_date, 
-        education: item.education, 
-        religion: item.religion, 
-        marital_status: item.marital_status, 
-        citizenship: item.citizenship, 
-        gender: item.gender, 
-        blood_type: item.blood_type, 
-        salary: item.salary, 
-        contract_type: item.contract_type, 
-        bank_code: item.bank_code, 
-        account_number: item.account_number, 
-        contract_end: item.contract_end, 
-        join_date: item.join_date, 
-        exit_date: item.exit_date, 
-        employee_photo: item.employee_photo, 
-        employee_status: item.employee_status, 
-      }))
-    : [];
+
+  // Mapping langsung ke Employee, ambil nama bank, posisi, dan departemen dari relasi
+  let employeeData: Employee | undefined = undefined;
+  if (data && typeof data === "object") {
+    employeeData = {
+      id: data.id ?? null,
+      user_id: data.user_id ?? null,
+      ck_setting_id: data.ck_setting_id ?? null,
+      company_id: data.company_id ?? null,
+      employee_id: data.employee_id ?? null,
+      nik: data.nik ?? null,
+      first_name: data.first_name ?? null,
+      last_name: data.last_name ?? null,
+      position_id: data.position_id ?? null,
+      department_id: data.department_id ?? null,
+      address: data.address ?? null,
+      email: data.email ?? null,
+      phone: data.phone ?? null,
+      birth_place: data.birth_place ?? null,
+      birth_date: data.birth_date ?? null,
+      education: data.education ?? null,
+      religion: data.religion ?? null,
+      marital_status: data.marital_status ?? null,
+      citizenship: data.citizenship ?? null,
+      gender: data.gender ?? null,
+      blood_type: data.blood_type ?? null,
+      salary: data.salary ?? null,
+      contract_type: data.contract_type ?? null,
+      contract_end: data.contract_end ?? null,
+      bank_code: data.bank_code ?? null,
+      account_number: data.account_number ?? null,
+      join_date: data.join_date ?? null,
+      exit_date: data.exit_date ?? null,
+      employee_photo: data.employee_photo ?? null,
+      employee_status: data.employee_status ?? null,
+      created_at: data.created_at ?? null,
+      updated_at: data.updated_at ?? null,
+      position_name: data.position?.name ?? null, // ambil nama posisi dari relasi
+      department_name: data.position?.department?.name ?? null, // ambil nama departemen dari relasi
+      bank_name: data.bank?.name ?? null, // ambil nama bank dari relasi
+      employee_photo_url: data.employee_photo_url ?? null,
+    };
+  }
 
   return {
-    profillData,
+    employeeData,
     loading: isLoading,
-    profileRule,
+    error,
   };
 }
