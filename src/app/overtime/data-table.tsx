@@ -32,7 +32,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -61,6 +61,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { DateRange } from "react-day-picker";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -72,21 +73,36 @@ export function DataTable<TData, TValue>({
   data,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  );
-  
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+  const [date, setDate] = useState<DateRange | undefined>(undefined);
+  const [open, setOpen] = useState(false);
+  const filteredData = useMemo(() => {
+    // Menggunakan state 'date' untuk filter tabel utama
+    if (!date?.from || !date?.to) {
+      return data;
+    }
+
+    return data.filter((item: any) => {
+      const itemDate = new Date(item.date);
+      return (
+        itemDate instanceof Date &&
+        !isNaN(itemDate.getTime()) &&
+        itemDate >= date.from! &&
+        itemDate <= date.to!
+      );
+    });
+  }, [data, date]);
+
   const [filters, setFilters] = useState({
+    overtimeType: [] as string[],
     status: [] as string[],
-    overtimeName: [] as string[],
   });
   const applyClickedRef = useRef(false);
   const [tempFilters, setTempFilters] = useState(filters);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
-  const [date, setDate] = React.useState<Date>();
   const table = useReactTable({
-    data,
+    data: filteredData,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -136,6 +152,35 @@ export function DataTable<TData, TValue>({
     startPage = Math.max(1, endPage - maxVisiblePages + 1);
   }
 
+   const applyFiltersToTable = () => {
+    const newColumnFilters: ColumnFiltersState = [];
+    if (tempFilters.overtimeType.length > 0) {
+      newColumnFilters.push({
+        id: "type", 
+        value: tempFilters.overtimeType,
+      });
+    }
+    if (tempFilters.status.length > 0) {
+      newColumnFilters.push({
+        id: "status", 
+        value: tempFilters.status,
+      });
+    }
+    table.setColumnFilters(newColumnFilters);
+    setFilters(tempFilters); 
+  };
+
+  const clearAllFilters = () => {
+    setTempFilters({
+      overtimeType: [],
+      status: [],
+    });
+    table.setColumnFilters([]);
+    setFilters({
+      overtimeType: [],
+      status: [],
+    });
+  };
   
 
   return (
@@ -143,47 +188,117 @@ export function DataTable<TData, TValue>({
       <div className="flex items-center gap-6 w-full justify-between">
         <span className="min-w-[187px] text-lg flex-none">Overtime Payment Submission</span>
         <div className="flex items-center py-4 gap-6">
-          <div className="w-fit">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={"calendar"}
-                  className={cn(
-                    "w-[280px] justify-start text-left font-normal",
-                    !date && "text-neutral-300"
-                  )}
-                  id="overtime-date-filter"
-                >
-                  <CalendarIcon />
-                  {date ? format(date, "PPP") : <span>Today</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="">
-                <Calendar
-                  mode="single"
-                  selected={date}
-                  onSelect={setDate}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
+          <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild id="date-overtime">
+              <Button
+                id="date"
+                variant={"calendar"}
+                icon={
+                  <svg
+                    width="25"
+                    height="25"
+                    viewBox="0 0 25 25"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M16.6663 2.08333V6.25"
+                      stroke="#B0B0B0"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M8.33333 2.08333V6.25"
+                      stroke="#B0B0B0"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M3.125 9.375H21.875"
+                      stroke="#B0B0B0"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      fillRule="evenodd"
+                      clipRule="evenodd"
+                      d="M19.7917 4.16667H5.20833C4.05729 4.16667 3.125 5.09896 3.125 6.25001V19.7917C3.125 20.9427 4.05729 21.875 5.20833 21.875H19.7917C20.9427 21.875 21.875 20.9427 21.875 19.7917V6.25001C21.875 5.09896 20.9427 4.16667 19.7917 4.16667Z"
+                      stroke="#B0B0B0"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M7.30495 13.2594C7.1612 13.2594 7.04453 13.376 7.04558 13.5198C7.04558 13.6635 7.16224 13.7802 7.30599 13.7802C7.44974 13.7802 7.56641 13.6635 7.56641 13.5198C7.56641 13.376 7.44974 13.2594 7.30495 13.2594"
+                      stroke="#B0B0B0"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M12.5139 13.2594C12.3702 13.2594 12.2535 13.376 12.2546 13.5198C12.2546 13.6635 12.3712 13.7802 12.515 13.7802C12.6587 13.7802 12.7754 13.6635 12.7754 13.5198C12.7754 13.376 12.6587 13.2594 12.5139 13.2594"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M17.7219 13.2594C17.5782 13.2594 17.4615 13.376 17.4626 13.5198C17.4626 13.6635 17.5792 13.7802 17.723 13.7802C17.8667 13.7802 17.9834 13.6635 17.9834 13.5198C17.9834 13.376 17.8667 13.2594 17.7219 13.2594"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M7.30495 17.426C7.1612 17.426 7.04453 17.5427 7.04558 17.6865C7.04558 17.8302 7.16224 17.9469 7.30599 17.9469C7.44974 17.9469 7.56641 17.8302 7.56641 17.6865C7.56641 17.5427 7.44974 17.426 7.30495 17.426"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M12.5139 17.426C12.3702 17.426 12.2535 17.5427 12.2546 17.6865C12.2546 17.8302 12.3712 17.9469 12.515 17.9469C12.6587 17.9469 12.7754 17.8302 12.7754 17.6865C12.7754 17.5427 12.6587 17.426 12.5139 17.426"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                }
+                className={cn(
+                  "w-auto justify-start text-left font-normal",
+                  !date?.from && "text-muted-foreground"
+                )}
+              >
+                {date?.from && date?.to ? (
+                  `${format(date.from, "yyyy-MM-dd")} - ${format(
+                    date.to,
+                    "yyyy-MM-dd"
+                  )}`
+                ) : (
+                  <span className="text-neutral-300">Pick a date range</span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                initialFocus
+                mode="range"
+                defaultMonth={date?.from}
+                selected={date}
+                onSelect={setDate}
+                numberOfMonths={1}
+              />
+            </PopoverContent>
+          </Popover>
           <div className="w-fit">
             <DropdownMenu
               onOpenChange={(open) => {
-                if (!open && !applyClickedRef.current) {
-                  setFilters(tempFilters);
-                  table.setColumnFilters(
-                    Object.entries(tempFilters)
-                      .filter(([_, value]) => value.length > 0)
-                      .map(([key, value]) => ({
-                        id: key,
-                        value,
-                      }))
-                  );
-                }
                 if (!open) {
-                  applyClickedRef.current = false; // reset
+                  applyFiltersToTable();
                 }
               }}
             >
@@ -212,33 +327,34 @@ export function DataTable<TData, TValue>({
                   Filters
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-64">
-                <DropdownMenuLabel>Overtime Name</DropdownMenuLabel>
-                {["Weekend", "Weekday","Holiday"].map(
-                  (status) => (
-                    <DropdownMenuCheckboxItem
-                      key={status}
-                      checked={tempFilters.overtimeName.includes(status)}
-                      onSelect={(e) => e.preventDefault()}
-                      onCheckedChange={() => {
-                        setTempFilters((prev) => {
-                          const exists = prev.overtimeName.includes(status);
-                          return {
-                            ...prev,
-                            overtimeName: exists
-                              ? prev.overtimeName.filter((item) => item !== status)
-                              : [...prev.overtimeName, status],
-                          };
-                        });
-                      }}
-                    >
-                      {status}
-                    </DropdownMenuCheckboxItem>
-                  )
-                )}
+              <DropdownMenuContent className="w-64 p-3">
+                <DropdownMenuLabel>Overtime Type</DropdownMenuLabel>
+                {[
+                  "Government Regulation", 
+                  "Flat",
+                ].map((type) => (
+                  <DropdownMenuCheckboxItem
+                    key={type}
+                    checked={tempFilters.overtimeType.includes(type)}
+                    onSelect={(e) => e.preventDefault()}
+                    onCheckedChange={() => {
+                      setTempFilters((prev) => {
+                        const exists = prev.overtimeType.includes(type);
+                        return {
+                          ...prev,
+                          overtimeType: exists
+                            ? prev.overtimeType.filter((item) => item !== type)
+                            : [...prev.overtimeType, type],
+                        };
+                      });
+                    }}
+                  >
+                    {type}
+                  </DropdownMenuCheckboxItem>
+                ))}
 
                 <DropdownMenuSeparator />
-                <DropdownMenuLabel>Approval Status</DropdownMenuLabel>
+                <DropdownMenuLabel>Overtime Status</DropdownMenuLabel>
                 {["Approved", "Pending", "Rejected"].map((status) => (
                   <DropdownMenuCheckboxItem
                     key={status}
@@ -250,9 +366,7 @@ export function DataTable<TData, TValue>({
                         return {
                           ...prev,
                           status: exists
-                            ? prev.status.filter(
-                                (item) => item !== status
-                              )
+                            ? prev.status.filter((item) => item !== status)
                             : [...prev.status, status],
                         };
                       });
@@ -264,21 +378,13 @@ export function DataTable<TData, TValue>({
 
                 <DropdownMenuSeparator />
 
-                {/* Clear Filters Button */}
                 <div className="flex flex-col px-2 py-1 gap-[10px]">
                   <Button
                     variant="default"
                     className="w-full"
                     onClick={() => {
-                      setFilters(tempFilters);
-                      table.setColumnFilters(
-                        Object.entries(tempFilters)
-                          .filter(([_, value]) => value.length > 0)
-                          .map(([key, value]) => ({
-                            id: key,
-                            value,
-                          }))
-                      );
+                      applyClickedRef.current = true; // Set ref to true
+                      applyFiltersToTable(); // Terapkan filter ke tabel
                     }}
                   >
                     Apply Filters
@@ -287,11 +393,8 @@ export function DataTable<TData, TValue>({
                     variant="ghost"
                     className="w-full"
                     onClick={() => {
-                      setTempFilters({
-                        status: [],
-                        overtimeName: [],
-                      });
-                      table.setColumnFilters([]); // Clear all filters in the table
+                      applyClickedRef.current = true; // Set ref to true
+                      clearAllFilters(); // Hapus semua filter
                     }}
                   >
                     Clear Filters

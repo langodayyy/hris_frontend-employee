@@ -24,6 +24,7 @@ import { Input } from "@/components/ui/input";
 import { FileUploader } from "@/components/ui/fileUploader";
 import { useRouter } from "next/navigation";
 import OvertimeForm from "@/components/custom/overtime-form";
+import { Toaster } from "sonner";
 
 export default function AddOvertimePaymentPage() {
   const [valueEmployee, setValueEmployee] = React.useState("");
@@ -43,6 +44,7 @@ export default function AddOvertimePaymentPage() {
 
   return (
     <Sidebar title="Overtime">
+      <Toaster position="bottom-right" expand={true} richColors closeButton></Toaster>
       <Card>
         <CardContent className="flex flex-col gap-[15px]">
           <div className="px-[10px]">
