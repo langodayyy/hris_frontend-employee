@@ -165,90 +165,88 @@ export default function DashboardPage() {
   );
 
   useEffect(() => {
-  const fetchDashboard = async () => {
-    try {
-      const token = Cookies.get('token-employee');
+    const fetchDashboard = async () => {
+      setIsLoading(true); // Mulai loading saat fetch dimulai
+      try {
+        const token = Cookies.get("token-employee");
 
-      // Konversi nama bulan (e.g. "January") ke angka (e.g. "01")
-      const monthIndex = monthNames.indexOf(selectedMonth || '') + 1;
-      const month = String(monthIndex).padStart(2, '0'); // '01', '02', dst.
-      const year = selectedYear || new Date().getFullYear().toString();
+        const monthIndex = monthNames.indexOf(selectedMonth || "") + 1;
+        const month = String(monthIndex).padStart(2, "0");
+        const year = selectedYear || new Date().getFullYear().toString();
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/employee/dashboard?month=${month}&year=${year}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/employee/dashboard?month=${month}&year=${year}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
-      const data = await res.json();
-      if (!res.ok) {
-        throw data;
-      }
-
-      setDashboardData({
-        totalWorkHour: data.totalWorkHour || [],
-        totalAttendance: data.totalAttendance || [],
-        leaveSummary: data.leaveSummary || {},
-        totalOnTime: data.totalOnTime || [],
-        overtimeSummary: data.overtimeSummary || [],
-        monthlySalaryLastYear: data.monthlySalaryLastYear || [],
-      });
-    } catch (err) {
-      let message = "Unknown error occurred";
-      let messagesToShow: string[] = [];
-
-      if (
-        err &&
-        typeof err === "object" &&
-        "message" in err &&
-        typeof (err as any).message === "string"
-      ) {
-        const backendError = err as { message: string; errors?: Record<string, string[]> };
-
-        if (backendError.message.toLowerCase().includes("failed to fetch")) {
-          message = "Unknown error occurred";
-        } else {
-          message = backendError.message;
+        const data = await res.json();
+        if (!res.ok) {
+          throw data;
         }
 
-        messagesToShow = backendError.errors
-          ? Object.values(backendError.errors).flat()
-          : [message];
-      } else {
-        messagesToShow = [message];
+        setDashboardData({
+          totalWorkHour: data.totalWorkHour || [],
+          totalAttendance: data.totalAttendance || [],
+          leaveSummary: data.leaveSummary || {},
+          totalOnTime: data.totalOnTime || [],
+          overtimeSummary: data.overtimeSummary || [],
+          monthlySalaryLastYear: data.monthlySalaryLastYear || [],
+        });
+      } catch (err) {
+        let message = "Unknown error occurred";
+        let messagesToShow: string[] = [];
+
+        if (
+          err &&
+          typeof err === "object" &&
+          "message" in err &&
+          typeof (err as any).message === "string"
+        ) {
+          const backendError = err as {
+            message: string;
+            errors?: Record<string, string[]>;
+          };
+
+          if (backendError.message.toLowerCase().includes("failed to fetch")) {
+            message = "Unknown error occurred";
+          } else {
+            message = backendError.message;
+          }
+
+          messagesToShow = backendError.errors
+            ? Object.values(backendError.errors).flat()
+            : [message];
+        } else {
+          messagesToShow = [message];
+        }
+
+        toast.error(
+          <>
+            <p className="text-red-700 font-bold">Error</p>
+            {messagesToShow.map((msg, idx) => (
+              <div key={idx} className="text-red-700">
+                • {msg}
+              </div>
+            ))}
+          </>,
+          { duration: 30000 }
+        );
+      } finally {
+        setIsLoading(false); // Selesai loading, baik sukses maupun gagal
       }
+    };
 
-      toast.error(
-        <>
-          <p className="text-red-700 font-bold">Error</p>
-          {messagesToShow.map((msg, idx) => (
-            <div key={idx} className="text-red-700">• {msg}</div>
-          ))}
-        </>,
-        { duration: 30000 }
-      );
+    // Trigger fetch if both month & year are selected
+    if (selectedMonth && selectedYear) {
+      fetchDashboard();
     }
-  };
-
-  // Trigger fetch if both month & year are selected
-  if (selectedMonth && selectedYear) {
-    fetchDashboard();
-  }
-}, [selectedMonth, selectedYear]); // 👈 Tambahkan ini
+  }, [selectedMonth, selectedYear]); 
 
   const [isLoading, setIsLoading] = useState(true);
-
-  // Simulasi untuk mengubah isLoading menjadi FALSE setelah beberapa waktu (SIMULASI SAJA SEBELUM FETCHING)
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false); // Setelah 1.5 detik, ubah isLoading jadi FALSE
-    }, 1500);
-
-
-    return () => {
-      clearTimeout(timer);
-    };
-  }, []);
 
   // Filter data berdasarkan bulan dan tahun yang dipilih
   const filteredData = React.useMemo(() => {
@@ -276,9 +274,12 @@ export default function DashboardPage() {
     });
   }, [selectedMonth, selectedYear, formatted]);
 
+  // const Days = React.useMemo(() => {
+  //   return attendanceData.reduce((acc, curr) => acc + curr.total, 0);
+  // }, []);
   const Days = React.useMemo(() => {
     return attendanceData.reduce((acc, curr) => acc + curr.total, 0);
-  }, []);
+  }, [attendanceData]);
 
   return (
     <Sidebar title="Dashboard">
