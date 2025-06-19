@@ -53,7 +53,7 @@ const ExpectedSalaryCard: React.FC<ExpectedSalaryCardProps> = ({
               } ${selectedYear}`}
           </CardDescription>
         </div>
-        <div className="border-b-2 border-neutral-900 w-full"></div>
+        <div className="border-b-2 border-neutral-100 w-full"></div>
       </CardHeader>
       <CardContent className="gap-[10px] flex flex-col">
         <Card className="p-[20px] gap-[10px]">

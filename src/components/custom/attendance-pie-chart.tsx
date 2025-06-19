@@ -23,80 +23,97 @@ export const AttendancePieChart: React.FC<AttendancePieChartProps> = ({
   chartConfig,
   className,
 }) => {
+  // Cek apakah tidak ada data sama sekali atau semua totalnya nol
+  const hasNoData =
+    Days === 0 || attendanceData.every((item) => item.total === 0);
+
   return (
     <div className="flex items-center justify-center gap-8 max-w-full w-full px-6">
-      <div className="w-[250px]">
-        <ChartContainer
-          config={chartConfig}
-          className="aspect-square min-h-[250px] flex items-center justify-center"
-        >
-          <PieChart>
-            <ChartTooltip
-              cursor={false}
-              content={<ChartTooltipContent hideLabel />}
-            />
-            <Pie
-              data={attendanceData}
-              dataKey="total"
-              nameKey="status"
-              innerRadius={60}
-              strokeWidth={0}
+      {hasNoData ? (
+        <>
+          <div className="w-full flex items-center justify-center px-7 py-30 text-center">
+            <p className="text-gray-500 italic justify-center items-center">
+              You don’t have any attendance entries at the moment.
+            </p>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="w-[250px]">
+            <ChartContainer
+              config={chartConfig}
+              className="aspect-square min-h-[250px] flex items-center justify-center"
             >
-              <RechartsLabel
-                content={({ viewBox }) => {
-                  if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                    return (
-                      <text
-                        x={viewBox.cx}
-                        y={viewBox.cy}
-                        textAnchor="middle"
-                        dominantBaseline="middle"
-                      >
-                        <tspan
-                          x={viewBox.cx}
-                          y={viewBox.cy}
-                          className="fill-foreground text-3xl font-bold"
-                        >
-                          {Days.toLocaleString()}
-                        </tspan>
-                        <tspan
-                          x={viewBox.cx}
-                          y={(viewBox.cy || 0) + 24}
-                          className="fill-muted-foreground"
-                        >
-                          Days
-                        </tspan>
-                      </text>
-                    );
-                  }
-                }}
-              />
-            </Pie>
-          </PieChart>
-        </ChartContainer>
-      </div>
-      <div className="w-[200px] flex flex-col justify-center gap-2 pr-7">
-        {attendanceData.map((item) => {
-          const percentage =
-            Days > 0 ? ((item.total / Days) * 100).toFixed(1) : 0;
-          return (
-            <div key={item.status} className="flex justify-between">
-              <div className="flex items-center gap-2">
-                <span
-                  className="w-3 h-3 rounded-full"
-                  style={{ backgroundColor: item.fill }}
-                ></span>
-                <span className="text-sm font-medium">
-                  {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
-                </span>
-              </div>
-              <span className="text-sm font-medium text-neutral-400">
-                {percentage}%
-              </span>
-            </div>
-          );
-        })}
-      </div>
+              <PieChart>
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent hideLabel />}
+                />
+                <Pie
+                  data={attendanceData}
+                  dataKey="total"
+                  nameKey="status"
+                  innerRadius={60}
+                  strokeWidth={0}
+                >
+                  <RechartsLabel
+                    content={({ viewBox }) => {
+                      if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                        return (
+                          <text
+                            x={viewBox.cx}
+                            y={viewBox.cy}
+                            textAnchor="middle"
+                            dominantBaseline="middle"
+                          >
+                            <tspan
+                              x={viewBox.cx}
+                              y={viewBox.cy}
+                              className="fill-foreground text-3xl font-bold"
+                            >
+                              {Days.toLocaleString()}
+                            </tspan>
+                            <tspan
+                              x={viewBox.cx}
+                              y={(viewBox.cy || 0) + 24}
+                              className="fill-muted-foreground"
+                            >
+                              Days
+                            </tspan>
+                          </text>
+                        );
+                      }
+                    }}
+                  />
+                </Pie>
+              </PieChart>
+            </ChartContainer>
+          </div>
+          <div className="w-[200px] flex flex-col justify-center gap-2 pr-7">
+            {attendanceData.map((item) => {
+              const percentage =
+                Days > 0 ? ((item.total / Days) * 100).toFixed(1) : 0;
+              return (
+                <div key={item.status} className="flex justify-between">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: item.fill }}
+                    ></span>
+                    <span className="text-sm font-medium">
+                      {item.status.charAt(0).toUpperCase() +
+                        item.status.slice(1)}
+                    </span>
+                  </div>
+                  <span className="text-sm font-medium text-neutral-400">
+                    {percentage}%
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
     </div>
   );
 };

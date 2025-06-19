@@ -521,7 +521,7 @@ export default function DashboardPage() {
                         } ${selectedYear}`}
                     </CardDescription>
                   </div>
-                  <div className="border-b-2 border-neutral-900 w-full"></div>
+                  <div className="border-b-2 border-neutral-100 w-full"></div>
                 </CardHeader>
                 <div className="flex items-center justify-center max-h-[300px]">
                   <AttendancePieChart
@@ -545,7 +545,7 @@ export default function DashboardPage() {
                       {selectedMonth && selectedYear && `${selectedYear}`}
                     </CardDescription>
                   </div>
-                  <div className="border-b-2 border-neutral-900 w-full"></div>
+                  <div className="border-b-2 border-neutral-100 w-full"></div>
                 </CardHeader>
                 <CardContent className="grid grid-cols-2 gap-[10px] p-0">
                   <TotalQuotaCard
@@ -603,7 +603,7 @@ export default function DashboardPage() {
                         } ${selectedYear}`}
                     </CardDescription>
                   </div>
-                  <div className="border-b-2 border-neutral-900 w-full"></div>
+                  <div className="border-b-2 border-neutral-100 w-full"></div>
                 </CardHeader>
                 <CardContent className="grid grid-cols-2 gap-[10px] p-0">
                   <TotalQuotaCard
