@@ -44,6 +44,12 @@ import PasswordInput from "@/components/ui/passwordInput";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useProfilData } from "@/hooks/useProfileData";
 import { Employee } from "@/types/employee";
+import { set } from "date-fns";
+import ChangePasswordForm from "../../components/custom/changePasswordForm"; // pastikan path sesuai
+
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+// import { changePasswordSchema } from "../../components/context/changePasswordContext";
 
 export default function EmployeeDetails() {
   const { employeeData, loading, error } = useProfilData();
@@ -52,16 +58,21 @@ export default function EmployeeDetails() {
   type Props = {
     employeeData?: Employee;
   };
-  // Pastikan state password selalu string kosong, bukan undefined/null
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const changePassword = async () => {
+    console.log(newPassword, confirmPassword, oldPassword);
     // setLoading(true);
 
     const form = document.getElementById("passwordForm") as HTMLFormElement;
     const formData = new FormData(form);
+
+    formData.append("current_password", oldPassword);
+    formData.append("new_password", newPassword);
+    formData.append("new_password_confirmation", confirmPassword);
+    formData.append("_method", "PATCH");
 
     // Tambahkan _method agar Laravel tahu bahwa ini PATCH
     formData.append("_method", "PATCH");
@@ -73,13 +84,9 @@ export default function EmployeeDetails() {
           method: "PATCH", // Tetap pakai POST karena pakai _method
           headers: {
             Authorization: `Bearer ${Cookies.get("token-employee")}`,
-            "Content-Type": "application/json",
+            // "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            current_password: oldPassword,
-            new_password: newPassword,
-            new_password_confirmation: confirmPassword,
-          }),
+          body: formData,
         }
       );
 
@@ -107,7 +114,7 @@ export default function EmployeeDetails() {
         };
 
         if (backendError.message.toLowerCase().includes("failed to fetch")) {
-          message = "Unknown error occurred";
+          message = backendError.message;
         } else {
           message = backendError.message;
         }
@@ -119,22 +126,18 @@ export default function EmployeeDetails() {
         messagesToShow = [message];
       }
 
-      // toast.error(
-      //   <>
-      //     <p className="text-red-700 font-bold">Error</p>
-      //     {messagesToShow.map((msg, idx) => (
-      //       <div key={idx} className="text-red-700">
-      //         • {msg}
-      //       </div>
-      //     ))}
-      //   </>,
-      //   { duration: 30000 }
-      // );
+      messagesToShow.forEach((msg) => alert(msg));
     }
-    // finally {
-    //   setLoading(false);
-    // }
   };
+
+  // const {
+  //   register,
+  //   handleSubmit,
+  //   formState: { errors },
+  // } = useForm({
+  //   resolver: zodResolver(changePasswordSchema),
+  // }
+  // );
 
   // const [employeeStatus, setEmployeeStatus] = useState("");
   // const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
@@ -429,11 +432,51 @@ export default function EmployeeDetails() {
     setShowChangePasswordDialog(true);
   }, []);
 
-  // const handleChangePasswordSubmit = useCallback(() => {
-  //   // Implement password change logic here (e.g., API call)
-  //   console.log("Password changed!");
-  //   setShowChangePasswordDialog(false);
-  // }, []);
+  const handleChangePassword = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault(); // 💥 WAJIB supaya tidak kirim ulang form
+
+    const formData = {
+      current_password: oldPassword,
+      new_password: newPassword,
+      new_password_confirmation: confirmPassword,
+    };
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/change-password`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${Cookies.get("token-employee")}`,
+          },
+          credentials: "include",
+          body: JSON.stringify(formData),
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok && data.status) {
+        alert("Password successfully updated");
+        setOldPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+      } else {
+        let errorMessage = "Failed to update password";
+
+        if (data.errors && typeof data.errors === "object") {
+          errorMessage = Object.values(data.errors).flat().join("\n");
+        } else if (data.message) {
+          errorMessage = data.message;
+        }
+
+        alert(errorMessage); // 💡 hanya dipanggil sekali
+      }
+    } catch (err) {
+      alert("Network error");
+    }
+  };
 
   return (
     <Sidebar title="Profile">
@@ -570,6 +613,7 @@ export default function EmployeeDetails() {
                 </div>
                 <div className="flex gap-[20px] ml-auto items-center"></div>
               </div>
+              {/* <ChangePasswordForm /> */}
               {/* Header Profile Dropdown */}
               <DropdownMenu
               // open={isHeaderDropdownOpen}
@@ -631,47 +675,54 @@ export default function EmployeeDetails() {
                 onOpenChange={setShowChangePasswordDialog}
               >
                 <DialogContent className="sm:max-w-[425px] bg-white">
-                  <DialogHeader>
-                    <DialogTitle>Change Password</DialogTitle>
-                  </DialogHeader>
-                  <div className="grid gap-4 mt-3">
-                    <form id="passwordForm">
+                  <form id="passwordForm" onSubmit={changePassword}>
+                    <DialogHeader>
+                      <DialogTitle>Change Password</DialogTitle>
+                    </DialogHeader>
+                    <div className="grid gap-4 mt-3">
                       <PasswordInput
                         label="Old Password"
                         name="currentPassword"
                         id="currentPassword"
                         placeholder="Enter your old password"
+                        // value={oldPassword}
+                        onChange={(e) => setOldPassword(e.target.value)}
                       />
                       <PasswordInput
                         label="New Password"
                         name="newPassword"
                         id="newPassword"
                         placeholder="Enter your new password"
+                        // value={setNewPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
                       />
                       <PasswordInput
                         label="Confirmation New Password"
                         name="confirmPassword"
                         id="confirmPassword"
                         placeholder="Enter your new password again"
+                        // value={setConfirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
                       />
-                    </form>
-                  </div>
-                  <DialogFooter>
-                    <div className="flex flex-row gap-3.5 justify-end mt-4">
-                      <DialogClose asChild>
-                        <Button variant={"outline"} className="w-fit">
-                          Cancel
-                        </Button>
-                      </DialogClose>
-                      <Button
-                        variant={"default"}
-                        className="w-fit h-fit"
-                        onClick={changePassword}
-                      >
-                        Save
-                      </Button>
                     </div>
-                  </DialogFooter>
+                    <DialogFooter>
+                      <div className="flex flex-row gap-3.5 justify-end mt-4">
+                        <DialogClose asChild>
+                          <Button variant={"outline"} className="w-fit">
+                            Cancel
+                          </Button>
+                        </DialogClose>
+                        <Button
+                          variant={"default"}
+                          className="w-fit h-fit"
+                          type="submit"
+                          // onClick={changePassword}
+                        >
+                          Save
+                        </Button>
+                      </div>
+                    </DialogFooter>
+                  </form>
                 </DialogContent>
               </Dialog>
             </div>

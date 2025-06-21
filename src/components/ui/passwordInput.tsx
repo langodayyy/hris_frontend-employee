@@ -13,6 +13,7 @@ interface PasswordInputProps {
   name: string;
   value?: string;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  error?: string;
 }
 
 export default function PasswordInput({
@@ -22,6 +23,7 @@ export default function PasswordInput({
   name,
   value,
   onChange,
+  error,
 }: PasswordInputProps) {
   const [show, setShow] = useState(false);
 
@@ -33,10 +35,11 @@ export default function PasswordInput({
         type={show ? "text" : "password"}
         name={name}
         placeholder={placeholder}
-        className="pr-10"
+        className={`pr-10 ${error ? "border-red-500" : ""}`}
         value={value}
         onChange={onChange}
       />
+      {error && <span className="text-red-500 text-xs mt-1">{error}</span>}
       <button
         type="button"
         onClick={() => setShow(!show)}
