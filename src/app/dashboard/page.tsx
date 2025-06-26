@@ -118,7 +118,7 @@ export default function DashboardPage() {
     workHours: item.total_hour,
   })) ?? [];
   const totalMonthlyWorkHour = (dashboardData?.totalWorkHour || []).reduce((sum, item) => {
-    return sum + (item.total_hour || 0);
+    return sum + parseFloat(item.total_hour || 0);
   }, 0);
 
   console.log("Total jam kerja dalam sebulan:", totalMonthlyWorkHour);

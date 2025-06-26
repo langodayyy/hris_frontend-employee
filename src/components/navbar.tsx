@@ -14,19 +14,33 @@ import {
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { formatDistanceToNow } from 'date-fns';
 // import Cookies from "js-cookie";
 
 interface NavbarProps {
   title: string;
 }
 
+type Notification = {
+  id: string;
+  message: string;
+  url: string;
+  created_at: string;
+  read_at: string | null;
+};
+
+function formatTimeAgo(dateString: string) {
+  return formatDistanceToNow(new Date(dateString), { addSuffix: true });
+}
+
 export default function Navbar({ title }: NavbarProps) {
-   const [imageValid, setImageValid] = useState(true);
+  const [imageValid, setImageValid] = useState(true);
   const [avatarImage, setAvatarImage] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
   const [employeeId, setEmployeeId] = useState<string | null>(null);
   const [company, setCompany] = useState<string | null>(null);
-
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   // Fungsi untuk mengambil inisial dari nama pengguna
   const getInitials = (name: string) => {
     const nameParts = name.split(" ");
@@ -45,62 +59,42 @@ export default function Navbar({ title }: NavbarProps) {
     { label: "Profile", path: "/profile" },
   ];
 
-  // array notification sample
-  const notifications = [
-    {
-      user_id: 3,
-      type: "checkclock",
-      time: "5 minutes ago",
-      approval_status: "approved",
-    },
-    {
-      user_id: 3,
-      type: "checkclock",
-      time: "10 minutes ago",
-      approval_status: "rejected",
-    },
-    {
-      user_id: 3,
-      type: "overtime",
-      time: "1 hour ago",
-      approval_status: "approved",
-    },
-    {
-      user_id: 3,
-      type: "overtime",
-      time: "2 hours ago",
-      approval_status: "rejected",
-    },
-  ];
-
-  const notificationCount = notifications.length;
-
   const router = useRouter();
 
   useEffect(() => {
+    const token = Cookies.get('token-employee');
     const fetchUser = async () => {
-      try {
-        const token = Cookies.get('token-employee');
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/get-user-employee`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/get-user-employee`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-        const data = await res.json();
-        if (!res.ok) {
-          throw data;
-        }
-        setAvatarImage(data.photo_url);
-        setUserName(data.full_name);
-        setCompany(data.company_name);
-        setEmployeeId(data.id_employee)
-
-      } catch (err) {
-      
+      const data = await res.json();
+      if (!res.ok) {
+        throw data;
       }
+      setAvatarImage(data.photo_url);
+      setUserName(data.full_name);
+      setCompany(data.company_name);
+      setEmployeeId(data.id_employee)
     };
+    const fetchNotifications = async () => {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/employee/notifications`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) return;
+
+      const data = await res.json();
+      setNotifications(data.notifications);
+      setUnreadCount(data.unread_count);
+    };
+
     fetchUser();
+    fetchNotifications();
   }, [])
 
   const handleLogout = async () => {
@@ -200,9 +194,9 @@ export default function Navbar({ title }: NavbarProps) {
                     />
                   </svg>
                 </a>
-                {notificationCount > 0 && (
+                {unreadCount > 0 && (
                   <span className="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 inline-flex items-center justify-center w-[16px] h-[16px] bg-red-600 text-white text-xs rounded-full">
-                    {notificationCount}
+                    {unreadCount}
                   </span>
                 )}
               </div>
@@ -212,37 +206,60 @@ export default function Navbar({ title }: NavbarProps) {
               <DropdownMenuLabel className="bg-neutral-50 text-neutral-900 h-[42px] px-4 py-[10px] text-base items-center">
                 Notification
               </DropdownMenuLabel>
-              <DropdownMenuSeparator className="m-0" />
-              {notificationCount > 0 ? (
-                notifications.map((notification, index) => (
-                  <DropdownMenuItem key={index} className="h-[91px]">
-                    <div className="flex items-center flex-row gap-[10px] w-auto h-[91px] py-3">
-                      <Image
-                        src={`/${notification.type}-${notification.approval_status}.svg`} // Corrected dynamic image source
-                        alt="status-icon"
-                        width={53}
-                        height={53}
-                      />
+              <DropdownMenuSeparator className="m-0"/>
+              {notifications.map((notif) => (
+                <DropdownMenuItem key={notif.id} className="h-[91px]" 
+                onClick={async () => {
+                  try {
+                    const token = Cookies.get("token-employee");
 
-                      <div className="flex flex-col gap-[2px] h-auto w-full">
-                        <div className="flex flex-col">
-                          <span className="text-base font-medium text-neutral-950">
-                            HR has {notification.approval_status} your{" "}
-                            {notification.type} request
-                          </span>
-                        </div>
-                        <span className="text-sm text-info-500">
-                          {notification.time}
+                    // Tandai sebagai sudah dibaca di backend
+                    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/employee/notifications/read/${notif.id}`, {
+                      method: "POST",
+                      headers: {
+                        Authorization: `Bearer ${token}`,
+                      },
+                    });
+
+                    // Redirect setelah sukses
+                    router.push(notif.url);
+                  } catch (error) {
+                    console.error("Failed to mark as read", error);
+                    router.push(notif.url); // Tetap redirect meskipun gagal
+                  }
+                }}
+                >
+                  <div className="flex items-center flex-row gap-[10px] w-auto h-[91px] py-3">
+                    <div className="flex flex-col gap-[2px] h-auto w-full">
+                      <div className="flex flex-col">
+                        <span className="text-base font-medium text-neutral-950">
+                          {notif.message}
                         </span>
                       </div>
+                      <span className="text-sm text-info-500">
+                        {formatTimeAgo(notif.created_at)}
+                      </span>
                     </div>
-                  </DropdownMenuItem>
-                ))
-              ) : (
-                <DropdownMenuItem className="h-[50px] flex items-center justify-center text-neutral-500">
-                  No new notifications
+                  </div>
                 </DropdownMenuItem>
-              )}
+              ))}
+
+              <DropdownMenuLabel className="bg-neutral-50 text-neutral-900 h-[42px] px-[10px] py-[10px] text-base items-center">
+                <div className="flex justify-center gap-[10px]">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <g clipPath="url(#clip0_609_3815)">
+                    <path d="M23.2709 9.41885C21.7199 6.89285 18.1919 2.65485 11.9999 2.65485C5.80787 2.65485 2.27987 6.89285 0.728868 9.41885C0.249396 10.1944 -0.00457764 11.0881 -0.00457764 11.9998C-0.00457764 12.9116 0.249396 13.8053 0.728868 14.5808C2.27987 17.1068 5.80787 21.3448 11.9999 21.3448C18.1919 21.3448 21.7199 17.1068 23.2709 14.5808C23.7503 13.8053 24.0043 12.9116 24.0043 11.9998C24.0043 11.0881 23.7503 10.1944 23.2709 9.41885ZM21.5659 13.5338C20.2339 15.6998 17.2189 19.3448 11.9999 19.3448C6.78087 19.3448 3.76587 15.6998 2.43387 13.5338C2.149 13.0729 1.99812 12.5417 1.99812 11.9998C1.99812 11.458 2.149 10.9268 2.43387 10.4658C3.76587 8.29985 6.78087 4.65485 11.9999 4.65485C17.2189 4.65485 20.2339 8.29585 21.5659 10.4658C21.8507 10.9268 22.0016 11.458 22.0016 11.9998C22.0016 12.5417 21.8507 13.0729 21.5659 13.5338Z" fill="#3D3D3D"/>
+                    <path d="M11.9998 6.99982C11.0109 6.99982 10.0442 7.29306 9.22197 7.84247C8.39972 8.39188 7.75886 9.17277 7.38042 10.0864C7.00198 11 6.90297 12.0054 7.09589 12.9753C7.28882 13.9452 7.76502 14.8361 8.46429 15.5354C9.16355 16.2346 10.0545 16.7108 11.0244 16.9037C11.9943 17.0967 12.9996 16.9977 13.9132 16.6192C14.8269 16.2408 15.6078 15.5999 16.1572 14.7777C16.7066 13.9554 16.9998 12.9887 16.9998 11.9998C16.9982 10.6742 16.4709 9.40337 15.5336 8.46604C14.5963 7.5287 13.3254 7.0014 11.9998 6.99982ZM11.9998 14.9998C11.4065 14.9998 10.8265 14.8239 10.3331 14.4942C9.83976 14.1646 9.45524 13.696 9.22818 13.1479C9.00112 12.5997 8.94171 11.9965 9.05746 11.4145C9.17322 10.8326 9.45894 10.2981 9.8785 9.8785C10.2981 9.45894 10.8326 9.17322 11.4145 9.05746C11.9965 8.94171 12.5997 9.00112 13.1479 9.22818C13.696 9.45524 14.1646 9.83976 14.4942 10.3331C14.8239 10.8265 14.9998 11.4065 14.9998 11.9998C14.9998 12.7955 14.6837 13.5585 14.1211 14.1211C13.5585 14.6837 12.7955 14.9998 11.9998 14.9998Z" fill="#3D3D3D"/>
+                  </g>
+                  <defs>
+                    <clipPath id="clip0_609_3815">
+                      <rect width="24" height="24" fill="white"/>
+                    </clipPath>
+                  </defs>
+                </svg>
+                <a href="#">View All</a>
+                </div>
+              </DropdownMenuLabel>
             </DropdownMenuContent>
           </DropdownMenuTrigger>
         </DropdownMenu>
